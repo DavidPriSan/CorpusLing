@@ -1,11 +1,3 @@
-CONSULTA:
-
-Lema: bruma | 
-
-Agrupado por acentos, mayúsculas
-
-Documentos: 1147 / Frecuencia absoluta: 2092 / Frecuencia normalizada: 5,32 por millón
-
 BIBLIOGRAFÍA	AUTOR	TÍTULO	FECHA	CRITERIO	BLOQUE	MEDIO	SOPORTE	TEMA	PAÍS	ZONA	TIPOLOGÍA	NOTAS	CONCORDANCIA
 
 Bolaño, Roberto: «Últimos atardeceres en la tierra». Putas asesinas. Barcelona: Anagrama, 2001.	Bolaño, Roberto	Putas asesinas	2001	Primera edición	Ficción	Escrito	Libro	Relato	Chile	Chilena	Ficción		El resto del día transcurre como entre brumas. En algún momento B y su padre se marchan a una playa cercana al aeropuerto. La playa es enorme y en los lindes abundan las cabañas con techos de cañizo en donde los pescadores guardan sus artes. El mar está revuelto: durante un rato B y su padre contemplan las olas que se estrellan contra
