@@ -20,21 +20,11 @@ text = re.sub(punctuationNoPeriod, "", text)
 
 tokenized = text.split()
 
-#Conteo
-def conteo(a):
-	dic = {}
-	for j in a:
-		if j in dic:
-			dic[j] += 1
-		else:
-			dic[j] = 1
-	return dic
-
-counted = conteo(tokenized)
-jsoned = [{} for i in range(len(counted))]
+#Json
+jsoned = [{} for i in range(len(tokenized))]
 i = 0
-for j in counted:
-	jsoned[i] = {"word": j, "count": counted[j]}
+for j in tokenized:
+	jsoned[i] = {"word": j}
 	i += 1
 
 #Devolver resultado en json

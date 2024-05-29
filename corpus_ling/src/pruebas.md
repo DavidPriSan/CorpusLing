@@ -19,16 +19,19 @@ display(pruebas);
 ```
 
 ```js
-function eachWord(data, {width}) {
-  vl.markBar().data(data).encode(
-    vl.x().fieldQ("word"),
-    vl.y().fieldN("count")
+vl.markBar()
+  .params(
+    vl.param('Apariciones').value(100).bind(vl.slider(0,5000,50))
   )
-}
+  .data(pruebas)
+  .transform(
+    vl.filter('datum.word.count() < Apariciones')
+  )
+  .width(600)
+  .height(32000)
+  .encode(
+    vl.y().fieldN("word"),
+    vl.x().count()
+  )
+  .render()
 ```
-
-<div class="grid grid-cols-1">
-  <div class="card">
-    ${resize((width) => eachWord(pruebas, {width}))}
-  </div>
-</div>
