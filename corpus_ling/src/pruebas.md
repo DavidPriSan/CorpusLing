@@ -29,7 +29,7 @@ vl.markBar()
   .transform(
     vl.filter("slice(datum.word, 0, 2) == Filtro")
   )
-  .width(600)
+  .width(800)
   .encode(
     vl.y().fieldN('word').title('Palabra'),
     vl.x().fieldN('word').count().title('Apariciones')
