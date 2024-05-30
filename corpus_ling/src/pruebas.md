@@ -12,26 +12,33 @@ toc: false
 const pruebas = FileAttachment("./data/pruebas.json").json();
 ```
 
-<!-- Apariciones de cada palabra -->
+<!-- Json -->
 
 ```js
 display(pruebas);
 ```
 
+<!-- Filtro del usuario -->
+
+<input id="filtro" type="text"/>
+
+<!-- Apariciones de cada palabra -->
+
 ```js
+const input = document.getElementById("filtro");
+
 vl.markBar()
-  .params(
-    vl.param('Apariciones').value(100).bind(vl.slider(0,5000,50))
-  )
   .data(pruebas)
+  .params(
+    vl.param('f').bind(input.value)
+  )
   .transform(
-    vl.filter('datum.word.count() < Apariciones')
+    vl.filter("slice(datum.word, 0, 2) == f")
   )
   .width(600)
-  .height(32000)
   .encode(
-    vl.y().fieldN("word"),
-    vl.x().count()
+    vl.y().fieldN('word').title('Palabra'),
+    vl.x().fieldN('word').count().title('Apariciones')
   )
   .render()
 ```

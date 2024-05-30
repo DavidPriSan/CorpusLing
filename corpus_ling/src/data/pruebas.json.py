@@ -11,6 +11,8 @@ from nltk.util import ngrams
 with open ("./src/data/spanishText_10000_15000", "r", encoding="latin-1") as file:
     text = file.read()
     
+text = text.lower()
+
 text = re.sub('<.*>', '', text)
 
 text = re.sub('ENDOFARTICLE.', '', text)
