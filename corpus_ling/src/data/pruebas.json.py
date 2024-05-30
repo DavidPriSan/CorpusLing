@@ -18,7 +18,9 @@ text = re.sub('<.*>', '', text)
 text = re.sub('ENDOFARTICLE.', '', text)
 
 punctuationNoPeriod = "[" + re.sub(r"\.", "", string.punctuation) + "]"
-text = re.sub(punctuationNoPeriod, "", text)
+text = re.sub(punctuationNoPeriod, " ", text)
+
+text = re.sub(r"\d+", "", text)
 
 tokenized = text.split()
 
