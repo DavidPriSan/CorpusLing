@@ -18,22 +18,16 @@ const pruebas = FileAttachment("./data/pruebas.json").json();
 display(pruebas);
 ```
 
-<!-- Filtro del usuario -->
-
-<input id="filtro" type="text"/>
-
 <!-- Apariciones de cada palabra -->
 
 ```js
-const input = document.getElementById("filtro");
-
 vl.markBar()
   .data(pruebas)
   .params(
-    vl.param('f').bind(input.value)
+    {name: "Filtro", bind: {input: "text"}}
   )
   .transform(
-    vl.filter("slice(datum.word, 0, 2) == f")
+    vl.filter("slice(datum.word, 0, 2) == Filtro")
   )
   .width(600)
   .encode(
