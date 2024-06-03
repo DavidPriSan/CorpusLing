@@ -8,7 +8,7 @@ from nltk.util import ngrams
 #kaggle.api.dataset_download_files('rtatman/120-million-word-spanish-corpus', path='./src/data/', unzip=True)
 
 #Carga y formateo de datos
-with open ("./src/data/spanishText_10000_15000", "r", encoding="latin-1") as file:
+with open ("./src/data/spanishText_110000_115000", "r", encoding="latin-1") as file:
     text = file.read()
     
 text = text.lower()
