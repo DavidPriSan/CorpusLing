@@ -10,12 +10,14 @@ toc: false
 
 ```js
 const pruebas = FileAttachment("./data/pruebas.json").json();
+const bigramas = FileAttachment("./data/bigramas.json").json();
 ```
 
 <!-- Json -->
 
 ```js
 display(pruebas);
+display(bigramas);
 ```
 
 <!-- Apariciones de cada palabra -->
@@ -27,9 +29,10 @@ vl.markBar()
     {name: "Filtro", bind: {input: "text"}}
   )
   .transform(
-    vl.filter("slice(datum.word, 0, 2) == Filtro")
+    vl.filter("datum.word == Filtro")
   )
   .width(800)
+  .autosize({type: "pad", resize: "true", contains: "padding"})
   .encode(
     vl.y().fieldN('word').title('Palabra'),
     vl.x().fieldN('word').count().title('Apariciones')
