@@ -20,22 +20,36 @@ display(pruebas);
 display(bigramas);
 ```
 
-<!-- Apariciones de cada palabra -->
+<!-- Filtro -->
 
 ```js
-vl.markBar()
-  .data(pruebas)
-  .params(
-    {name: "Filtro", bind: {input: "text"}}
-  )
-  .transform(
-    vl.filter("datum.word == Filtro")
-  )
-  .width(800)
-  .autosize({type: "pad", resize: "true", contains: "padding"})
-  .encode(
-    vl.y().fieldN('word').title('Palabra'),
-    vl.x().fieldN('word').count().title('Apariciones')
-  )
-  .render()
+const palabraInput = Inputs.text({label: "Palabra a buscar"});
+const palabra = Generators.input(palabraInput);
 ```
+
+<!-- Apariciones de cada palabra -->
+
+<div class="card" style="display: flex; flex-direction: column; gap: 1rem;">
+  ${palabraInput}
+  ${resize((width) => Plot.plot({
+    width,
+    marginBottom: 80,
+    y: {grid: true, label: "Apariciones"},
+    x: {label: null, tickRotate: -30},
+    marks: [
+      Plot.barY(bigramas.filter((d) => d.word === palabra),
+        Plot.groupX(
+          {
+            y: "count"
+          },
+          {
+            x: "bigram",
+            sort: { x: "y", reverse: true, limit: 20 },
+            fill: "steelblue"
+          }
+        )
+      ),
+      Plot.ruleY([0])
+    ]
+  }))}
+</div>
