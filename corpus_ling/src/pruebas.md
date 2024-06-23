@@ -10,13 +10,16 @@ toc: false
 
 ```js
 const bigramas = FileAttachment("./data/bigramas.json").json();
+const paises = ['España', 'México', 'Colombia', 'Argentina', 'Perú', 'Venezuela', 'Chile', 'Guatemala', 'Ecuador', 'Bolivia', 'Cuba'];
 ```
+
 
 <!-- Json -->
 
 ```js
 display(bigramas);
 ```
+
 
 <!-- Filtro -->
 
@@ -25,13 +28,14 @@ const palabraInput = Inputs.text({label: "Palabra a buscar"});
 const palabra = Generators.input(palabraInput);
 ```
 
-<div class="card" style="display: flex; flex-direction: column; gap: 1rem;">
+<div class="card">
   ${palabraInput}
 </div>
 
-<!-- Apariciones de bigramas -->
 
-<div class="card" style="display: flex; flex-direction: column; gap: 1rem;"><h1>Bigramas</h1>
+<!-- Bigramas totales -->
+
+<div class="card"><h1>Bigramas</h1>
   ${resize((width) => Plot.plot({
     width,
     marginBottom: 80,
@@ -55,9 +59,10 @@ const palabra = Generators.input(palabraInput);
   }))}
 </div>
 
-<!-- Apariciones por país -->
 
-<div class="card" style="display: flex; flex-direction: column; gap: 1rem;"><h1>Países</h1>
+<!-- Heatmap por país -->
+
+<div class="card"><h1>Países</h1>
   ${resize((width) => Plot.plot({
     width,
     marginLeft: 120,
@@ -73,4 +78,81 @@ const palabra = Generators.input(palabraInput);
       )
     ]
   }))}
+</div>
+
+
+<!-- Selector país -->
+
+```js
+const paisInput = Inputs.select([null].concat(paises), {label: "País"});
+const pais = Generators.input(paisInput);
+```
+
+<div class="card">
+  ${paisInput}
+</div>
+
+
+<!-- Estadísticas del país -->
+
+<div class="grid grid-cols-2">
+  <div class="card">
+    <h1>Bigramas</h1>
+    ${resize((width) => Plot.plot({
+      width,
+      marginBottom: 80,
+      y: {grid: true, label: "Apariciones"},
+      x: {label: null, tickRotate: -30},
+      marks: [
+        Plot.barY(bigramas.filter((d) => d.word === palabra && d.country === pais),
+          Plot.groupX(
+            {
+              y: "count"
+            },
+            {
+              x: "bigram",
+              sort: { x: "y", reverse: true, limit: 10 },
+              fill: "steelblue"
+            }
+          )
+        ),
+        Plot.ruleY([0])
+      ]
+    }))}
+  </div>
+  <div class="card">
+    <h1>Evolución en el tiempo</h1>
+    ${resize((width) => Plot.plot({
+      width,
+      marginBottom: 80,
+      y: {grid: true, label: "Apariciones"},
+      x: {label: "Año"},
+      marks: [
+        Plot.areaY(bigramas.filter((d) => d.word === palabra && d.country === pais),
+          Plot.binX(
+            {
+              y: "count"
+            },
+            {
+              x: "year",
+              sort: { x: "y", reverse: true, limit: 10 },
+              fillOpacity: 0.2
+            }
+          )
+        ),
+        Plot.lineY(bigramas.filter((d) => d.word === palabra && d.country === pais),
+          Plot.binX(
+            {
+              y: "count"
+            },
+            {
+              x: "year",
+              sort: { x: "y", reverse: true, limit: 10 }
+            }
+          )
+        ),
+        Plot.ruleY([0])
+      ]
+    }))}
+  </div>
 </div>
