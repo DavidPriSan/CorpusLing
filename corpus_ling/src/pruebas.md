@@ -9,14 +9,12 @@ toc: false
 <!-- Carga de datos -->
 
 ```js
-const pruebas = FileAttachment("./data/pruebas.json").json();
 const bigramas = FileAttachment("./data/bigramas.json").json();
 ```
 
 <!-- Json -->
 
 ```js
-display(pruebas);
 display(bigramas);
 ```
 
