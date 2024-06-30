@@ -70,7 +70,7 @@ const palabra = Generators.input(palabraInput);
       ),
       Plot.barY(freq.filter((d) => d.lemma === palabra),
         {
-            y: "mag",
+            y: "spok",
             insetLeft: width*(7/17),
             insetRight: width*(9/17),
             fill: "steelblue"
@@ -86,7 +86,7 @@ const palabra = Generators.input(palabraInput);
       ),
       Plot.barY(freq.filter((d) => d.lemma === palabra),
         {
-            y: "spok",
+            y: "mag",
             insetLeft: width*(11/17),
             insetRight: width*(5/17),
             fill: "steelblue"
@@ -108,7 +108,7 @@ const palabra = Generators.input(palabraInput);
             fill: "steelblue"
         }
       ),
-      Plot.text([["Blog"], ["Web"], ["TVM"], ["Spoken"], ["Fiction"], ["Magazine"], ["Newspaper"], ["Academic"]]),
+      Plot.text([["Blog"], ["Web"], ["TVM"], ["Oral"], ["Ficción"], ["Revista"], ["Periódico"], ["Académico"]]),
       Plot.ruleY([0])
     ]
   }))}
