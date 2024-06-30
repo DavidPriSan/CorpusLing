@@ -1,4 +1,5 @@
 ---
+theme: dashboard
 toc: false
 ---
 
@@ -46,69 +47,152 @@ toc: false
 
 <div class="hero">
   <h1>CorpusLing</h1>
-  <h2></h2>
+  <h2>TFG Grado en Ingeniería Informática</h2>
 </div>
 
-<div class="grid grid-cols-2" style="grid-auto-rows: 504px;">
-  <div class="card">${
-    resize((width) => Plot.plot({
-      title: "Your awesomeness over time 🚀",
-      subtitle: "Up and to the right!",
-      width,
-      y: {grid: true, label: "Awesomeness"},
-      marks: [
-        Plot.ruleY([0]),
-        Plot.lineY(aapl, {x: "Date", y: "Close", tip: true})
-      ]
-    }))
-  }</div>
-  <div class="card">${
-    resize((width) => Plot.plot({
-      title: "How big are penguins, anyway? 🐧",
-      width,
-      grid: true,
-      x: {label: "Body mass (g)"},
-      y: {label: "Flipper length (mm)"},
-      color: {legend: true},
-      marks: [
-        Plot.linearRegressionY(penguins, {x: "body_mass_g", y: "flipper_length_mm", stroke: "species"}),
-        Plot.dot(penguins, {x: "body_mass_g", y: "flipper_length_mm", stroke: "species", tip: true})
-      ]
-    }))
-  }</div>
-</div>
+## Pruebas
+
+<!-- Carga de datos -->
 
 ```js
-const aapl = FileAttachment("aapl.csv").csv({typed: true});
-const penguins = FileAttachment("penguins.csv").csv({typed: true});
+const freq = FileAttachment("./data/wordFrequency.tsv").tsv();
+const coll = FileAttachment("./data/collocates.tsv").tsv();
 ```
 
----
 
-## Next steps
+<!-- Filtro -->
 
-Here are some ideas of things you could try…
+```js
+const palabraInput = Inputs.text({label: "Palabra a buscar"});
+const palabra = Generators.input(palabraInput);
+```
 
-<div class="grid grid-cols-4">
-  <div class="card">
-    Chart your own data using <a href="https://observablehq.com/framework/lib/plot"><code>Plot</code></a> and <a href="https://observablehq.com/framework/files"><code>FileAttachment</code></a>. Make it responsive using <a href="https://observablehq.com/framework/display#responsive-display"><code>resize</code></a>.
+<div class="card">
+  ${palabraInput}
+</div>
+
+
+<!-- Frecuencia por tipo de texto -->
+
+<div class="card"><h1>Tipo de texto</h1>
+  ${resize((width) => Plot.plot({
+    width,
+    marginLeft: 50,
+    marginBottom: 40,
+    y: {grid: true, label: "Apariciones"},
+    x: {label: "Tipo de texto", ticks: 8},
+    marks: [
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "acad",
+            insetLeft: width*(1/17),
+            insetRight: width*(15/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "blog",
+            insetLeft: width*(3/17),
+            insetRight: width*(13/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "fic",
+            insetLeft: width*(5/17),
+            insetRight: width*(11/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "spok",
+            insetLeft: width*(7/17),
+            insetRight: width*(9/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "news",
+            insetLeft: width*(9/17),
+            insetRight: width*(7/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "mag",
+            insetLeft: width*(11/17),
+            insetRight: width*(5/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "TVM",
+            insetLeft: width*(13/17),
+            insetRight: width*(3/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "web",
+            insetLeft: width*(15/17),
+            insetRight: width*(1/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.text([["Blog"], ["Web"], ["TVM"], ["Oral"], ["Ficción"], ["Revista"], ["Periódico"], ["Académico"]]),
+      Plot.ruleY([0])
+    ]
+  }))}
+</div>
+
+
+<!-- Collocates -->
+
+<div class="grid grid-cols-2">
+  <div class="card"><h1>Colocados(antes)</h1>
+    ${resize((width) => Plot.plot({
+      width,
+      marginBottom: 80,
+      y: {grid: true, label: "Apariciones"},
+      x: {label: null, tickRotate: -35},
+      marks: [
+        Plot.barY(coll.filter((d) => d.lemma === palabra),
+          {
+            y: "freq",
+            x: "coll",
+            sort: { x: "y", reverse: true, limit: 15 },
+            fill: "steelblue"
+          }
+        ),
+        Plot.ruleY([0])
+      ]
+    }))}
   </div>
-  <div class="card">
-    Create a <a href="https://observablehq.com/framework/project-structure">new page</a> by adding a Markdown file (<code>whatever.md</code>) to the <code>src</code> folder.
-  </div>
-  <div class="card">
-    Add a drop-down menu using <a href="https://observablehq.com/framework/inputs/select"><code>Inputs.select</code></a> and use it to filter the data shown in a chart.
-  </div>
-  <div class="card">
-    Write a <a href="https://observablehq.com/framework/loaders">data loader</a> that queries a local database or API, generating a data snapshot on build.
-  </div>
-  <div class="card">
-    Import a <a href="https://observablehq.com/framework/imports">recommended library</a> from npm, such as <a href="https://observablehq.com/framework/lib/leaflet">Leaflet</a>, <a href="https://observablehq.com/framework/lib/dot">GraphViz</a>, <a href="https://observablehq.com/framework/lib/tex">TeX</a>, or <a href="https://observablehq.com/framework/lib/duckdb">DuckDB</a>.
-  </div>
-  <div class="card">
-    Ask for help, or share your work or ideas, on the <a href="https://talk.observablehq.com/">Observable forum</a>.
-  </div>
-  <div class="card">
-    Visit <a href="https://github.com/observablehq/framework">Framework on GitHub</a> and give us a star. Or file an issue if you’ve found a bug!
+
+  <div class="card"><h1>Colocados(después)</h1>
+    ${resize((width) => Plot.plot({
+      width,
+      marginBottom: 80,
+      y: {grid: true, label: "Apariciones"},
+      x: {label: null, tickRotate: -35},
+      marks: [
+        Plot.barY(coll.filter((d) => d.coll === palabra),
+          {
+            y: "freq",
+            x: "lemma",
+            sort: { x: "y", reverse: true, limit: 15 },
+            fill: "steelblue"
+          }
+        ),
+        Plot.ruleY([0])
+      ]
+    }))}
   </div>
 </div>
