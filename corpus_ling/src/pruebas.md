@@ -15,14 +15,6 @@ const numbers = FileAttachment("./data/numbers.tsv").tsv();
 ```
 
 
-<!-- CSV -->
-
-```js
-display(freq);
-display(coll);
-```
-
-
 <!-- Filtro -->
 
 ```js
@@ -37,7 +29,7 @@ const palabra = Generators.input(palabraInput);
 
 <!-- Frecuencia por tipo de texto -->
 
-<div class="card"><h1>Texto</h1>
+<div class="card"><h1>Tipo de texto</h1>
   ${resize((width) => Plot.plot({
     width,
     marginLeft: 50,
@@ -115,96 +107,43 @@ const palabra = Generators.input(palabraInput);
 </div>
 
 
-<!-- Heatmap por país -->
-
-<div class="card"><h1>Países</h1>
-  ${resize((width) => Plot.plot({
-    width,
-    marginLeft: 120,
-    y: {label: "País"},
-    x: {label: "Año"},
-    color: {legend: true, zero: true, label: "Apariciones"},
-    marks: [
-      Plot.cell(bigramas.filter((d) => d.word === palabra),
-        Plot.group(
-          {fill: "count"},
-          {x: "year", y: "country", inset: 0.5}
-        )
-      )
-    ]
-  }))}
-</div>
-
-
-<!-- Selector país -->
-
-```js
-const paisInput = Inputs.select([null].concat(paises), {label: "País"});
-const pais = Generators.input(paisInput);
-```
-
-<div class="card">
-  ${paisInput}
-</div>
-
-
-<!-- Estadísticas del país -->
+<!-- Collocates -->
 
 <div class="grid grid-cols-2">
-  <div class="card">
-    <h1>Bigramas</h1>
+  <div class="card"><h1>Colocados(antes)</h1>
     ${resize((width) => Plot.plot({
       width,
       marginBottom: 80,
       y: {grid: true, label: "Apariciones"},
       x: {label: null, tickRotate: -30},
       marks: [
-        Plot.barY(bigramas.filter((d) => d.word === palabra && d.country === pais),
-          Plot.groupX(
-            {
-              y: "count"
-            },
-            {
-              x: "bigram",
-              sort: { x: "y", reverse: true, limit: 10 },
-              fill: "steelblue"
-            }
-          )
+        Plot.barY(coll.filter((d) => d.lemma === palabra),
+          {
+            y: "freq",
+            x: "coll",
+            sort: { x: "y", reverse: true, limit: 15 },
+            fill: "steelblue"
+          }
         ),
         Plot.ruleY([0])
       ]
     }))}
   </div>
-  <div class="card">
-    <h1>Evolución en el tiempo</h1>
+
+  <div class="card"><h1>Colocados(después)</h1>
     ${resize((width) => Plot.plot({
       width,
       marginBottom: 80,
       y: {grid: true, label: "Apariciones"},
-      x: {label: "Año"},
+      x: {label: null, tickRotate: -30},
       marks: [
-        Plot.areaY(bigramas.filter((d) => d.word === palabra && d.country === pais),
-          Plot.binX(
-            {
-              y: "count"
-            },
-            {
-              x: "year",
-              sort: { x: "y", reverse: true, limit: 10 },
-              fillOpacity: 0.2
-            }
-          )
-        ),
-        Plot.lineY(bigramas.filter((d) => d.word === palabra && d.country === pais),
-          Plot.binX(
-            {
-              y: "count"
-            },
-            {
-              x: "year",
-              sort: { x: "y", reverse: true, limit: 10 }
-            }
-          )
+        Plot.barY(coll.filter((d) => d.coll === palabra),
+          {
+            y: "freq",
+            x: "lemma",
+            sort: { x: "y", reverse: true, limit: 15 },
+            fill: "steelblue"
+          }
         ),
         Plot.ruleY([0])
       ]
