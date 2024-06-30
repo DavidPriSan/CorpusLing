@@ -9,15 +9,17 @@ toc: false
 <!-- Carga de datos -->
 
 ```js
-const bigramas = FileAttachment("./data/bigramas.json").json();
-const paises = ['España', 'México', 'Colombia', 'Argentina', 'Perú', 'Venezuela', 'Chile', 'Guatemala', 'Ecuador', 'Bolivia', 'Cuba'];
+const freq = FileAttachment("./data/wordFrequency.tsv").tsv();
+const coll = FileAttachment("./data/collocates.tsv").tsv();
+const numbers = FileAttachment("./data/numbers.tsv").tsv();
 ```
 
 
-<!-- Json -->
+<!-- CSV -->
 
 ```js
-display(bigramas);
+display(freq);
+display(coll);
 ```
 
 
@@ -33,27 +35,80 @@ const palabra = Generators.input(palabraInput);
 </div>
 
 
-<!-- Bigramas totales -->
+<!-- Frecuencia por tipo de texto -->
 
-<div class="card"><h1>Bigramas</h1>
+<div class="card"><h1>Texto</h1>
   ${resize((width) => Plot.plot({
     width,
-    marginBottom: 80,
+    marginLeft: 50,
     y: {grid: true, label: "Apariciones"},
-    x: {label: null, tickRotate: -30},
+    x: {label: "Tipo de texto", ticks: 8},
     marks: [
-      Plot.barY(bigramas.filter((d) => d.word === palabra),
-        Plot.groupX(
-          {
-            y: "count"
-          },
-          {
-            x: "bigram",
-            sort: { x: "y", reverse: true, limit: 20 },
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "acad",
+            insetLeft: width*(1/17),
+            insetRight: width*(15/17),
             fill: "steelblue"
-          }
-        )
+        }
       ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "blog",
+            insetLeft: width*(3/17),
+            insetRight: width*(13/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "fic",
+            insetLeft: width*(5/17),
+            insetRight: width*(11/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "mag",
+            insetLeft: width*(7/17),
+            insetRight: width*(9/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "news",
+            insetLeft: width*(9/17),
+            insetRight: width*(7/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "spok",
+            insetLeft: width*(11/17),
+            insetRight: width*(5/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "TVM",
+            insetLeft: width*(13/17),
+            insetRight: width*(3/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.barY(freq.filter((d) => d.lemma === palabra),
+        {
+            y: "web",
+            insetLeft: width*(15/17),
+            insetRight: width*(1/17),
+            fill: "steelblue"
+        }
+      ),
+      Plot.text([["Blog"], ["Web"], ["TVM"], ["Spoken"], ["Fiction"], ["Magazine"], ["Newspaper"], ["Academic"]]),
       Plot.ruleY([0])
     ]
   }))}
