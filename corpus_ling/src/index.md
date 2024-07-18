@@ -67,6 +67,7 @@ const palabra = Generators.input(palabraInput);
 
 
 <!-- Tipo de texto D3 -->
+
 <div class="grid grid-cols-2">
   <div class="card" style="max-height: 60px; max-width: 400px;">
     ${palabraInput}
