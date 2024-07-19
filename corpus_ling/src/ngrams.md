@@ -13,13 +13,13 @@ const ngrams = FileAttachment("./data/ngrams.json").json();
 <!-- Tipo de texto D3 -->
 
 <div class="card">
-  <h1>Conjuntos más usados de 5 palabras</h1>
+  <h1>Conjuntos más usados de 5 palabras que empiezan por 'M'</h1>
   ${display(ng_svg.node())}
 </div>
 
 ```js
 // Dimensiones
-const ng_width = 900,
+const ng_width = 950,
       ng_height = ng_width,
       ng_radius = ng_width / 6;
 
