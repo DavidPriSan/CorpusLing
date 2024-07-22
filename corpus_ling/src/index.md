@@ -174,7 +174,7 @@ tt_svg.append('g')
 
 ```js
 // Dimensiones
-var c_width = 870,
+var c_width = 600,
     c_height = 500,
     c_marginTop = 20,
     c_marginRight = 0,
@@ -184,7 +184,7 @@ var c_width = 870,
 // Datos
 var c_data = coll.filter((d) => d.lemma === palabra);
 c_data = c_data.filter(function(d,i){
-  return i < 20;
+  return i < 10;
 });
 
 // Escala X
@@ -238,7 +238,7 @@ c_svg.append('g')
 
 ```js
 // Dimensiones
-var c_width = 870,
+var c_width = 600,
     c_height = 500,
     c_marginTop = 20,
     c_marginRight = 0,
@@ -248,7 +248,7 @@ var c_width = 870,
 // Datos
 var c_data = coll.filter((d) => d.coll === palabra);
 c_data = c_data.filter(function(d,i){
-  return i < 20;
+  return i < 10;
 });
 
 // Escala X
