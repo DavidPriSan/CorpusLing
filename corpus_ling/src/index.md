@@ -51,21 +51,26 @@ toc: false
 </div>
 
 
-<!-- Modo carga de datos -->
+<!-- Botones carga de datos -->
+
+```js
+const TSVpng = FileAttachment("TSV.png").image({width: 64});
+```
 
 ```js
 const cargaInput = Inputs.button([
-  ["TSV", value => 1]
+  [TSVpng, value => 1]
 ], {value: 0});
 const carga = Generators.input(cargaInput);
 ```
 
-<!-- Examinar TSV -->
+<!-- Modo de carga -->
 
 ```js
 const archivoTSVInput = Inputs.file({label: "Archivo TSV", accept: ".tsv", required: true, width: 310});
 const archivoTSV = Generators.input(archivoTSVInput);
 ```
+
 <div class="grid grid-cols-2">
   <div class="card">
     <h1>Elige el modo de carga de datos</h1>
@@ -81,6 +86,8 @@ const archivoTSV = Generators.input(archivoTSVInput);
     ${Inputs.table(archivoTSV.tsv())}
   </div>
 </div>
+
+<!-- Examinar TSV -->
 
 ```js
 const cargaDiv = document.getElementById('carga');
