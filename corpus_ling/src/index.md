@@ -51,6 +51,31 @@ toc: false
 </div>
 
 
+<!-- Botones pasos -->
+
+```js
+const pasosInput = Inputs.button([
+  ["Paso 1: Carga de datos", value => 1]
+], {value: 0});
+const pasos = Generators.input(pasosInput);
+```
+
+<div class="card">
+  ${pasosInput}
+</div>
+
+<!-- Procesamiento pasos -->
+
+```js
+const paso1Div = document.getElementById('paso1');
+
+if (pasos == 0) {
+  paso1Div.hidden = true;
+} else if (pasos == 1) {
+  paso1Div.hidden = false;
+}
+```
+
 <!-- Botones carga de datos -->
 
 ```js
@@ -70,7 +95,7 @@ const carga = Generators.input(cargaInput);
 const archivoTSVInput = Inputs.file({label: "Archivo TSV", accept: ".tsv", required: true, width: 310});
 const archivoTSV = Generators.input(archivoTSVInput);
 ```
-
+<div id="paso1">
 <div class="grid grid-cols-2">
   <div class="card">
     <h1>Elige el modo de carga de datos</h1>
@@ -85,6 +110,7 @@ const archivoTSV = Generators.input(archivoTSVInput);
   <div id="muestraTSV" class="card" style="max-height: 350px;">
     ${Inputs.table(archivoTSV.tsv())}
   </div>
+</div>
 </div>
 
 <!-- Examinar TSV -->
