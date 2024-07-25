@@ -50,14 +50,16 @@ toc: false
   <h2>TFG Grado en Ingeniería Informática</h2>
 </div>
 
-
 <!-- Botones pasos -->
 
 ```js
-const pasosInput = Inputs.button([
-  ["Paso 1: Carga de datos", value => 1],
-  ["Paso 2: Verificación", value => 2]
-], {value: 0});
+const pasosInput = Inputs.button(
+  [
+    ["Paso 1: Carga de datos", (value) => 1],
+    ["Paso 2: Verificación", (value) => 2],
+  ],
+  { value: 0 }
+);
 const pasos = Generators.input(pasosInput);
 ```
 
@@ -68,8 +70,8 @@ const pasos = Generators.input(pasosInput);
 <!-- Procesamiento pasos -->
 
 ```js
-const paso1Div = document.getElementById('paso1');
-const paso2Div = document.getElementById('paso2');
+const paso1Div = document.getElementById("paso1");
+const paso2Div = document.getElementById("paso2");
 
 if (pasos == 0) {
   paso1Div.hidden = true;
@@ -77,30 +79,32 @@ if (pasos == 0) {
 } else if (pasos == 1) {
   paso1Div.hidden = false;
   paso2Div.hidden = true;
-}  else if (pasos == 2) {
+} else if (pasos == 2) {
   paso1Div.hidden = true;
   paso2Div.hidden = false;
 }
 ```
 
-
 <!-- Botones carga de datos -->
 
 ```js
-const TSVpng = FileAttachment("TSV.png").image({width: 64});
+const TSVpng = FileAttachment("TSV.png").image({ width: 64 });
 ```
 
 ```js
-const cargaInput = Inputs.button([
-  [TSVpng, value => 1]
-], {value: 0});
+const cargaInput = Inputs.button([[TSVpng, (value) => 1]], { value: 0 });
 const carga = Generators.input(cargaInput);
 ```
 
 <!-- Modo de carga -->
 
 ```js
-const archivoTSVInput = Inputs.file({label: "Archivo TSV", accept: ".tsv", required: true, width: 310});
+const archivoTSVInput = Inputs.file({
+  label: "Archivo TSV",
+  accept: ".tsv",
+  required: true,
+  width: 310,
+});
 const archivoTSV = Generators.input(archivoTSVInput);
 ```
 
@@ -113,55 +117,36 @@ const archivoTSV = Generators.input(archivoTSVInput);
     <br>
     <div id="carga"></div>
     <div id="TSV">
-      <input type="file" id="archivoTSV" name="archivoTSV" accept=".tsv">
       ${archivoTSVInput}
     </div>
   </div>
   <div id="muestraTSV" class="card" style="max-height: 350px;">
-    
+    ${tablaTSV}
   </div>
 </div>
 </div>
 
-
 <!-- Examinar TSV -->
 
 ```js
-const cargaDiv = document.getElementById('carga');
-const TSVDiv = document.getElementById('TSV');
-const muestraTSVDiv = document.getElementById('muestraTSV');
+const cargaDiv = document.getElementById("carga");
+const TSVDiv = document.getElementById("TSV");
+const muestraTSVDiv = document.getElementById("muestraTSV");
 
 if (carga == 0) {
-  cargaDiv.innerHTML = '<p>Puedes elegir como quieres cargar tus datos pulsando los distintos botones de arriba.</p>';
+  cargaDiv.innerHTML = "<p>Puedes elegir como quieres cargar tus datos pulsando los distintos botones de arriba.</p>";
   TSVDiv.hidden = true;
   muestraTSVDiv.hidden = true;
 } else if (carga == 1) {
-  cargaDiv.innerHTML = '<p>Examina el archivo TSV de tu equipo haciendo click en el botón de abajo (siendo la primera línea del mismo los encabezados de las columnas).</p><br>';
+  cargaDiv.innerHTML = "<p>Examina el archivo TSV de tu equipo haciendo click en el botón de abajo (siendo la primera línea del mismo los encabezados de las columnas).</p><br>";
   TSVDiv.hidden = false;
   muestraTSVDiv.hidden = false;
 }
-
-function handle_tsv(evt) {
-  let fl_files = evt.target.files;
-  let fl_file = fl_files[0];
-
-  let reader = new FileReader();
-
-  let muestra_tsv = (e) => {
-    document.getElementById('muestraTSV').innerHTML = e.target.result;
-  }
-
-  let on_reader_load  = (fl) => {
-    return muestra_tsv;
-  }
-
-  reader.onload = on_reader_load(fl_file);
-  reader.readAsText(fl_file);
-}
-
-document.getElementById('archivoTSV').addEventListener('change', handle_tsv, false);
 ```
 
+```js
+const tablaTSV = Inputs.table(archivoTSV.tsv());
+```
 
 <!-- Botones verificación -->
 
@@ -178,9 +163,10 @@ document.getElementById('archivoTSV').addEventListener('change', handle_tsv, fal
 <div id="paso2">
 <div class="grid grid-cols-3">
   <div class="card">
-    <h1>Elige el modo de carga de datos</h1>
+    <h1>Comprueba el correcto procesamiento de tus datos</h1>
   </div>
   <div id="tabla" class="card grid-colspan-2" style="max-height: 350px;">
+    
   </div>
 </div>
 </div>
