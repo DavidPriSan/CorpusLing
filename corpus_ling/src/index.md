@@ -1,5 +1,5 @@
 ---
-theme: dashboard
+theme: [glacier, alt, wide]
 toc: false
 ---
 
@@ -55,7 +55,8 @@ toc: false
 
 ```js
 const pasosInput = Inputs.button([
-  ["Paso 1: Carga de datos", value => 1]
+  ["Paso 1: Carga de datos", value => 1],
+  ["Paso 2: Verificación", value => 2]
 ], {value: 0});
 const pasos = Generators.input(pasosInput);
 ```
@@ -68,13 +69,20 @@ const pasos = Generators.input(pasosInput);
 
 ```js
 const paso1Div = document.getElementById('paso1');
+const paso2Div = document.getElementById('paso2');
 
 if (pasos == 0) {
   paso1Div.hidden = true;
+  paso2Div.hidden = true;
 } else if (pasos == 1) {
   paso1Div.hidden = false;
+  paso2Div.hidden = true;
+}  else if (pasos == 2) {
+  paso1Div.hidden = true;
+  paso2Div.hidden = false;
 }
 ```
+
 
 <!-- Botones carga de datos -->
 
@@ -95,6 +103,7 @@ const carga = Generators.input(cargaInput);
 const archivoTSVInput = Inputs.file({label: "Archivo TSV", accept: ".tsv", required: true, width: 310});
 const archivoTSV = Generators.input(archivoTSVInput);
 ```
+
 <div id="paso1">
 <div class="grid grid-cols-2">
   <div class="card">
@@ -104,14 +113,16 @@ const archivoTSV = Generators.input(archivoTSVInput);
     <br>
     <div id="carga"></div>
     <div id="TSV">
+      <input type="file" id="archivoTSV" name="archivoTSV" accept=".tsv">
       ${archivoTSVInput}
     </div>
   </div>
   <div id="muestraTSV" class="card" style="max-height: 350px;">
-    ${Inputs.table(archivoTSV.tsv())}
+    
   </div>
 </div>
 </div>
+
 
 <!-- Examinar TSV -->
 
@@ -129,4 +140,47 @@ if (carga == 0) {
   TSVDiv.hidden = false;
   muestraTSVDiv.hidden = false;
 }
+
+function handle_tsv(evt) {
+  let fl_files = evt.target.files;
+  let fl_file = fl_files[0];
+
+  let reader = new FileReader();
+
+  let muestra_tsv = (e) => {
+    document.getElementById('muestraTSV').innerHTML = e.target.result;
+  }
+
+  let on_reader_load  = (fl) => {
+    return muestra_tsv;
+  }
+
+  reader.onload = on_reader_load(fl_file);
+  reader.readAsText(fl_file);
+}
+
+document.getElementById('archivoTSV').addEventListener('change', handle_tsv, false);
 ```
+
+
+<!-- Botones verificación -->
+
+```js
+
+```
+
+<!-- Verificación -->
+
+```js
+
+```
+
+<div id="paso2">
+<div class="grid grid-cols-3">
+  <div class="card">
+    <h1>Elige el modo de carga de datos</h1>
+  </div>
+  <div id="tabla" class="card grid-colspan-2" style="max-height: 350px;">
+  </div>
+</div>
+</div>
