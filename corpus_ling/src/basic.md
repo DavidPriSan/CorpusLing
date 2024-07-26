@@ -113,6 +113,9 @@ tt_svg.append('g')
       .text(d => d.data.percent.toLocaleString("es") + "%"));
 ```
 
+```js
+tt_data
+```
 
 <!-- Colocados D3 -->
 

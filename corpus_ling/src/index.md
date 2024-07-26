@@ -250,6 +250,11 @@ const selectorVf = Generators.input(selectorVfInput);
       ${limitVsInput}
       ${display(c_svg.node())}
     </div>
+    <div id="graphSector">
+      ${selectorVsInput}
+      ${limitVsInput}
+      ${display(tt_svg.node())}
+    </div>
   </div>
 </div>
 </div>
@@ -265,7 +270,8 @@ const selectorVf = Generators.input(selectorVfInput);
 // Botonera gráficos
 const graphInput = Inputs.button(
   [
-    ["Gráfico de barras", (value) => 1]
+    ["Gráfico de barras", (value) => 1],
+    ["Diagrama de sectores", (value) => 2]
   ],
   { value: 0 }
 );
@@ -276,11 +282,17 @@ const graph = Generators.input(graphInput);
 
 ```js
 const graphBarrasDiv = document.getElementById("graphBarras");
+const graphSectorDiv = document.getElementById("graphSector");
 
-if (pasos == 0) { // Sin seleccionar gráfico
+if (graph == 0) { // Sin seleccionar gráfico
   graphBarrasDiv.hidden = true;
-} else if (pasos == 1) { // Barras
+  graphSectorDiv.hidden = true;
+} else if (graph == 1) { // Barras
   graphBarrasDiv.hidden = false;
+  graphSectorDiv.hidden = true;
+} else if (graph == 2) { // Sectores
+  graphBarrasDiv.hidden = true;
+  graphSectorDiv.hidden = false;
 }
 ```
 
@@ -304,16 +316,15 @@ const limitVs = Generators.input(limitVsInput);
 ```js
 // Datos
 var c_data = TSV;
-/*var c_data = TSV.filter((d) => d.lemma === palabra);*/
 c_data = c_data.filter(function(d,i){
   return i < limitVs;
 });
 
 // Elige la primera key que no es un número
-var key = Object.keys(c_data[0]).find(key => c_data[0][key] === Object.values(c_data[0]).find((e) => isNaN(e)));
+var c_key = Object.keys(c_data[0]).find(c_key => c_data[0][c_key] === Object.values(c_data[0]).find((e) => isNaN(e)));
 
 // Dimensiones
-var c_width = [...new Set(c_data.map(item => item[key]))].length * 30,
+var c_width = [...new Set(c_data.map(item => item[c_key]))].length * 30,
     c_height = 600,
     c_marginTop = 20,
     c_marginRight = 0,
@@ -322,7 +333,7 @@ var c_width = [...new Set(c_data.map(item => item[key]))].length * 30,
 
 // Escala X
 var c_x = d3.scaleBand()
-  .domain(d3.groupSort(c_data, ([d]) => -d[key], (d) => d[key]))
+  .domain(d3.groupSort(c_data, ([d]) => -d[c_key], (d) => d[c_key]))
   .range([c_marginLeft, c_width - c_marginRight])
   .padding(0.1);
 
@@ -361,7 +372,7 @@ c_svg.append('g')
   .selectAll()
   .data(c_data)
   .join('rect')
-    .attr('x', (d) => c_x(d[key]))
+    .attr('x', (d) => c_x(d[c_key]))
     .attr('y', (d) => c_y(d[selectorVs]))
     .attr('height', (d) => (c_height - c_marginBottom) - c_y(d[selectorVs]))
     .attr('width', c_x.bandwidth());
@@ -385,4 +396,94 @@ c_svg.append('g')
     .attr('fill', 'currentColor')
     .attr('text-anchor', 'start')
     .text('↑ ' + selectorVs));
+```
+
+<!-- Diagrama de sectores -->
+
+```js
+// Dimensiones
+var tt_margin = 50,
+    tt_width = 500,
+    tt_height = 500,
+    tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
+
+// Datos
+var tt_data = TSV;
+/*var tt_filter = freq.filter((d) => d.lemma === palabra);
+var tt_data = tt_filter.map(d => [
+  { key: 'Blog', value: d.blog, percent: d3.format(",.1~f")((d.blog / d.freq) * 100) },
+  { key: 'Web', value: d.web, percent: d3.format(",.1~f")((d.web / d.freq) * 100) },
+  { key: 'TVM', value: d.TVM, percent: d3.format(",.1~f")((d.TVM / d.freq) * 100) },
+  { key: 'Oral', value: d.spok, percent: d3.format(",.1~f")((d.spok / d.freq) * 100) },
+  { key: 'Ficción', value: d.fic, percent: d3.format(",.1~f")((d.fic / d.freq) * 100) },
+  { key: 'Revista', value: d.mag, percent: d3.format(",.1~f")((d.mag / d.freq) * 100) },
+  { key: 'Periódico', value: d.news, percent: d3.format(",.1~f")((d.news / d.freq) * 100) },
+  { key: 'Académico', value: d.acad, percent: d3.format(",.1~f")((d.acad / d.freq) * 100) },
+]);*/
+
+var tt_key = Object.keys(tt_data[0]).find(tt_key => tt_data[0][tt_key] === Object.values(tt_data[0]).find((e) => isNaN(e)));
+
+// Paleta de colores
+var tt_color = d3.scaleOrdinal()
+  .domain(["Blog", "Web", "TVM", "Oral", "Ficción", "Revista", "Periódico", "Académico"])
+  .range(["#eeba79", "#79ee7f", "#79adee", "#ee79e8", "#e8ee79", "#79eeba", "#7f79ee", "#ee79ae"]);
+
+// Layout del gráfico
+var tt_pie = d3.pie()
+  .sort(null)
+  .value(d => d[selectorVs]);
+
+var tt_arc = d3.arc()
+  .innerRadius(0)
+  .outerRadius(tt_radius);
+
+var tt_labelRadius = tt_arc.outerRadius()() * 0.7;
+
+// Arco para el texto
+var tt_arcLabel = d3.arc()
+  .innerRadius(tt_labelRadius)
+  .outerRadius(tt_labelRadius);
+
+// SVG
+const tt_svg = d3.create('svg')
+  .selectAll('g')
+  .data(tt_data)
+  .attr('width', tt_width)
+  .attr('height', tt_height)
+  .attr('viewBox', [-tt_width / 2, -tt_height / 2, tt_width, tt_height])
+  .attr('style', 'font: 14px sans-serif;');
+
+// Sectores
+tt_svg.append('g')
+    .attr('stroke', 'white')
+  .selectAll()
+  .data(d => tt_pie(d))
+  .join('path')
+    .attr('d', tt_arc)
+    .attr('fill', d => tt_color(d[tt_key]))
+    .attr('stroke-width', '2px')
+    .attr('opacity', 0.7)
+  .append('title')
+    .text(d => `${d[tt_key]}: ${d[selectorVs].toLocaleString("es")}`);
+
+// Texto
+tt_svg.append('g')
+  .attr('text-anchor', 'middle')
+  .selectAll()
+  .data(d => tt_pie(d))
+  .join('text')
+    .attr('transform', d => `translate(${tt_arcLabel.centroid(d)})`)
+    .call(text => text.filter(d => (d.endAngle - d.startAngle) > 0.25).append("tspan")
+      .attr('y', '-0.4em')
+      .attr('font-weight', 'bold')
+      .text(d => d[tt_key]))
+    .call(text => text.filter(d => (d.endAngle - d.startAngle) > 0.25).append("tspan")
+      .attr('x', 0)
+      .attr('y', '0.7em')
+      .attr('fill-opacity', 0.7)
+      .text(d => d[selectorVs].toLocaleString("es") + "%"));
+```
+
+```js
+tt_svg
 ```
