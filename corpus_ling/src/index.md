@@ -309,16 +309,16 @@ c_data = c_data.filter(function(d,i){
   return i < limitVs;
 });
 
+// Elige la primera key que no es un número
+var key = Object.keys(c_data[0]).find(key => c_data[0][key] === Object.values(c_data[0]).find((e) => isNaN(e)));
+
 // Dimensiones
-var c_width = c_data.length * 30,
+var c_width = [...new Set(c_data.map(item => item[key]))].length * 30,
     c_height = 600,
     c_marginTop = 20,
     c_marginRight = 0,
     c_marginBottom = 70,
     c_marginLeft = 70;
-
-// Elige la primera key que no es un número
-var key = Object.keys(c_data[0]).find(key => c_data[0][key] === Object.values(c_data[0]).find((e) => isNaN(e)));
 
 // Escala X
 var c_x = d3.scaleBand()
