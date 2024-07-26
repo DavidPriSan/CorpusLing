@@ -238,25 +238,23 @@ const selectorVf = Generators.input(selectorVfInput);
 <!-- Visualización -->
 
 <div id="paso3">
-<div class="grid grid-cols-3">
-  <div class="card"> <!-- Texto -->
-    <h1>Elige el tipo de gráfico</h1>
-    <br>
-    ${graphInput}
-  </div>
-  <div class="card grid-colspan-2" style="max-height: 700px;"> <!-- Gráfico -->
-    <div id="graphBarras" style="overflow-y: scroll">
+  <div class="grid grid-cols-3">
+    <div class="card"> <!-- Texto -->
+      <h1>Elige el tipo de gráfico</h1>
+      <br>
+      ${graphInput}
+    </div>
+    <div class="card grid-colspan-2" style="max-height: 700px;"> <!-- Gráfico -->
       ${selectorVsInput}
       ${limitVsInput}
-      ${display(c_svg.node())}
-    </div>
-    <div id="graphSector">
-      ${selectorVsInput}
-      ${limitVsInput}
-      ${display(tt_svg.node())}
+      <div id="graphBarras" style="overflow-y: scroll">
+        ${display(c_svg.node())}
+      </div>
+      <div id="graphSector">
+        ${display(tt_svg.node())}
+      </div>
     </div>
   </div>
-</div>
 </div>
 
 <!-- Botones visualización -->
@@ -402,65 +400,119 @@ c_svg.append('g')
 
 ```js
 // Dimensiones
-var tt_margin = 50,
+/*const tt_margin = 50,
     tt_width = 500,
     tt_height = 500,
     tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
 
 // Datos
-var tt_data = TSV;
-/*var tt_filter = freq.filter((d) => d.lemma === palabra);
-var tt_data = tt_filter.map(d => [
-  { key: 'Blog', value: d.blog, percent: d3.format(",.1~f")((d.blog / d.freq) * 100) },
-  { key: 'Web', value: d.web, percent: d3.format(",.1~f")((d.web / d.freq) * 100) },
-  { key: 'TVM', value: d.TVM, percent: d3.format(",.1~f")((d.TVM / d.freq) * 100) },
-  { key: 'Oral', value: d.spok, percent: d3.format(",.1~f")((d.spok / d.freq) * 100) },
-  { key: 'Ficción', value: d.fic, percent: d3.format(",.1~f")((d.fic / d.freq) * 100) },
-  { key: 'Revista', value: d.mag, percent: d3.format(",.1~f")((d.mag / d.freq) * 100) },
-  { key: 'Periódico', value: d.news, percent: d3.format(",.1~f")((d.news / d.freq) * 100) },
-  { key: 'Académico', value: d.acad, percent: d3.format(",.1~f")((d.acad / d.freq) * 100) },
-]);*/
+const tt_data = TSV.filter(function(d,i){
+  return i < limitVs;
+});
 
-var tt_key = Object.keys(tt_data[0]).find(tt_key => tt_data[0][tt_key] === Object.values(tt_data[0]).find((e) => isNaN(e)));
+const tt_key = Object.keys(tt_data[0]).find(tt_key => tt_data[0][tt_key] === Object.values(tt_data[0]).find((e) => isNaN(e)));
 
 // Paleta de colores
-var tt_color = d3.scaleOrdinal()
-  .domain(["Blog", "Web", "TVM", "Oral", "Ficción", "Revista", "Periódico", "Académico"])
-  .range(["#eeba79", "#79ee7f", "#79adee", "#ee79e8", "#e8ee79", "#79eeba", "#7f79ee", "#ee79ae"]);
+const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_data.map(item => item[selectorVs]))].length + 1));
+
+// SVG
+const tt_svg = d3.select('#graphSector2')
+  .attr('width', tt_width)
+  .attr('height', tt_height)
+  .append('g')
+    .attr('transform', `translate(${tt_width / 2}, ${tt_height / 2})`);
 
 // Layout del gráfico
-var tt_pie = d3.pie()
+const tt_pie = d3.pie()
   .sort(null)
   .value(d => d[selectorVs]);
 
-var tt_arc = d3.arc()
+const tt_arc = d3.arc()
   .innerRadius(0)
   .outerRadius(tt_radius);
 
-var tt_labelRadius = tt_arc.outerRadius()() * 0.7;
+const tt_g = tt_svg.selectAll('.arc')
+  .data(tt_pie(tt_data))
+  .enter().append('g')
+  .attr('class', 'arc');
+
+tt_g.append('path')
+  .attr('d', tt_arc)
+  .attr('class', 'arc')
+  .style('fill', (d, i) => tt_color(i))
+  .style('stroke', 'white')
+  .style('stroke-width', 1);*/
+
+// Dimensiones
+const tt_margin = 20,
+    tt_width = 500,
+    tt_height = 500,
+    tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
+
+// Datos
+const tt_data = TSV.filter(function(d,i){
+  return i < limitVs;
+});
+
+// Key para identificar elementos (primera no numérica)
+const tt_key = Object.keys(tt_data[0]).find(tt_key => tt_data[0][tt_key] === Object.values(tt_data[0]).find((e) => isNaN(e)));
+
+// Paleta de colores
+const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_data.map(item => item[selectorVs]))].length + 1));
+
+// Layout del gráfico
+const tt_pie = d3.pie()
+  .sort(null)
+  .value(d => d[selectorVs]);
+
+// Generador de arcos
+const tt_arc = d3.arc()
+  .innerRadius(0)
+  .outerRadius(tt_radius);
+
+const tt_labelRadius = tt_arc.outerRadius()() * 0.7;
 
 // Arco para el texto
-var tt_arcLabel = d3.arc()
+const tt_arcLabel = d3.arc()
   .innerRadius(tt_labelRadius)
   .outerRadius(tt_labelRadius);
 
 // SVG
 const tt_svg = d3.create('svg')
-  .selectAll('g')
-  .data(tt_data)
   .attr('width', tt_width)
   .attr('height', tt_height)
-  .attr('viewBox', [-tt_width / 2, -tt_height / 2, tt_width, tt_height])
-  .attr('style', 'font: 14px sans-serif;');
+  .attr('style', 'font: 14px sans-serif;')
+  .attr('viewBox', [-tt_width / 2, -tt_height / 2, tt_width, tt_height]);
 
 // Sectores
-tt_svg.append('g')
+const tt_g = tt_svg.selectAll('.arc')
+  .data(tt_pie(tt_data))
+  .enter().append('g')
+  .attr('class', 'arc');
+
+tt_g.append('path')
+  .attr('d', tt_arc)
+  .attr('class', 'arc')
+  .style('fill', (d, i) => tt_color(i))
+  .style('fill-opacity', 0.8)
+  .style('stroke', 'black')
+  .style('stroke-width', 1);
+
+// Labels
+/*tt_g.append('text')
+  .attr('transform', d => `translate(${tt_arcLabel.centroid(d)})`)
+  .text(d => `${d.data[tt_key]}: ${d.data[selectorVs].toLocaleString("es")}`)
+  .style('fill', 'white')
+  .style('text-anchor', 'middle');*/
+
+// Sectores
+/*tt_svg.append('g')
     .attr('stroke', 'white')
   .selectAll()
   .data(d => tt_pie(d))
   .join('path')
     .attr('d', tt_arc)
-    .attr('fill', d => tt_color(d[tt_key]))
+    .attr('fill', d => tt_color(d[selectorVs]))
     .attr('stroke-width', '2px')
     .attr('opacity', 0.7)
   .append('title')
@@ -481,9 +533,9 @@ tt_svg.append('g')
       .attr('x', 0)
       .attr('y', '0.7em')
       .attr('fill-opacity', 0.7)
-      .text(d => d[selectorVs].toLocaleString("es") + "%"));
+      .text(d => (d3.format(",.1~f")((d.endAngle - d.startAngle) * 3.6)).toLocaleString("es") + "%"));*/
 ```
 
 ```js
-tt_svg
+
 ```
