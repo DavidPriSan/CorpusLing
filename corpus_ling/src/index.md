@@ -120,7 +120,12 @@ const TSVpng = FileAttachment("TSV.png").image({ width: 64 });
 
 ```js
 // Botonera
-const cargaInput = Inputs.button([[TSVpng, (value) => 1]], { value: 0 });
+const cargaInput = Inputs.button(
+  [
+    [TSVpng, (value) => 1]
+  ], 
+  { value: 0 }
+);
 const carga = Generators.input(cargaInput);
 ```
 
@@ -130,7 +135,7 @@ const carga = Generators.input(cargaInput);
 // Input TSV
 const archivoTSVInput = Inputs.file({
   label: "Archivo TSV",
-  accept: ".tsv",
+  accept: ".tsv,.csv,.json",
   required: true,
   width: 310,
 });
@@ -165,7 +170,7 @@ if (carga == 0) { // Sin seleccionar modo
   TSVDiv.hidden = true;
   muestraTSVDiv.hidden = true;
 } else if (carga == 1) { // Examinar TSV
-  cargaDiv.innerHTML = "<p>Examina el archivo TSV de tu equipo haciendo click en el botón de abajo (siendo la primera línea del mismo los encabezados de las columnas).</p><br>";
+  cargaDiv.innerHTML = "<p>Examina el archivo de tu equipo haciendo click en el botón de abajo, el archivo puede ser TSV, CSV(siendo la primera línea del mismo los encabezados de las columnas en ambos casos) o JSON.</p><br>";
   TSVDiv.hidden = false;
   muestraTSVDiv.hidden = false;
 }
@@ -173,12 +178,20 @@ if (carga == 0) { // Sin seleccionar modo
 
 ```js
 // Parseo TSV
-const TSV = archivoTSV.tsv();
+var arch;
+if (archivoTSV.name.split('.')[1] == 'tsv'){
+  var arch = archivoTSV.tsv();
+} else if (archivoTSV.name.split('.')[1] == 'csv'){
+  var arch = archivoTSV.csv( {typed: true} );
+} else if (archivoTSV.name.split('.')[1] == 'json'){
+  var arch = archivoTSV.json();
+}
+const archivo = arch;
 ```
 
 ```js
-muestraTSV.innerHTML = JSON.stringify(TSV);
-const keys = Object.keys(TSV[0]);
+muestraTSV.innerHTML = JSON.stringify(archivo);
+const keys = Object.keys(archivo[0]);
 ```
 
 <!-- Verificación -->
@@ -190,7 +203,7 @@ const keys = Object.keys(TSV[0]);
     <br>
     
   </div>
-  <div class="card grid-colspan-2" style="max-height: 350px;"> <!-- Tabla -->
+  <div class="card grid-colspan-2" style="max-height: 400px;"> <!-- Tabla -->
     ${selectorVfInput}
     <div id="tablaVf" class="scrollable-div"></div>
   </div>
@@ -204,15 +217,21 @@ const keys = Object.keys(TSV[0]);
   HACER LO DE NUMEROS EN UN COLOR Y TEXTO EN OTRO?
 
 */
-const container = document.getElementById("tablaVf");
+const container = document.getElementById('tablaVf');
 
-let table = document.createElement("table");
-let thead = document.createElement("thead");
-let tr = document.createElement("tr");
+let tablaAnt = document.getElementById('tablaVer');
+if (tablaAnt != null) {
+  tablaAnt.remove();
+}
+
+let table = document.createElement('table');
+table.setAttribute('id', 'tablaVer');
+let thead = document.createElement('thead');
+let tr = document.createElement('tr');
 
 // Encabezados
 keys.forEach((item) => {
-  let th = document.createElement("th");
+  let th = document.createElement('th');
   th.innerText = item;
   tr.appendChild(th);
 });
@@ -220,12 +239,12 @@ thead.appendChild(tr);
 table.append(tr);
 
 // Datos
-TSV.forEach((item) => {
-  let tr = document.createElement("tr");
+archivo.forEach((item) => {
+  let tr = document.createElement('tr');
   let vals = Object.values(item);
 
   vals.forEach((elem) => {
-    let td = document.createElement("td");
+    let td = document.createElement('td');
     td.innerText = elem;
     tr.appendChild(td);
   });
@@ -240,7 +259,7 @@ container.appendChild(table);
 // Selector
 /*
 
-  NO FUNCA
+  NO FUNCIONA
 
 */
 const selectorVfInput = Inputs.select(keys, {label: "Ordenar por"});
@@ -312,12 +331,7 @@ const selectorVsInput = Inputs.select(keys, {label: "Seleccionar columna"});
 const selectorVs = Generators.input(selectorVsInput);
 
 // Limitador de datos
-const limits = [];
-const nlims = 25;
-for(var i = 0; i < nlims; i++){
-  limits[i] = parseInt(TSV.length * ((i + 1) / nlims), 10);
-}
-const limitVsInput = Inputs.select(limits, {label: "Límite de elementos"});
+const limitVsInput = Inputs.range([1, archivo.length], {step: 1, label: "Límite de elementos"});
 const limitVs = Generators.input(limitVsInput);
 ```
 
@@ -325,7 +339,7 @@ const limitVs = Generators.input(limitVsInput);
 
 ```js
 // Datos
-const c_data = TSV.filter(function(d,i){
+const c_data = archivo.filter(function(d,i){
   return i < limitVs;
 });
 
@@ -333,7 +347,7 @@ const c_data = TSV.filter(function(d,i){
 const c_key = Object.keys(c_data[0]).find(c_key => c_data[0][c_key] === Object.values(c_data[0]).find((e) => isNaN(e)));
 
 // Dimensiones
-const c_width = [...new Set(c_data.map(item => item[c_key]))].length * 30,
+const c_width = Math.max(200, [...new Set(c_data.map(item => item[c_key]))].length * 30),
       c_height = 600,
       c_marginTop = 20,
       c_marginRight = 0,
@@ -417,7 +431,7 @@ const tt_margin = 20,
     tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
 
 // Datos
-const tt_data = TSV.filter(function(d,i){
+const tt_data = archivo.filter(function(d,i){
   return i < limitVs;
 });
 
