@@ -48,6 +48,18 @@ toc: false
   overflow-y: scroll;
 }
 
+div.tooltip-donut {
+  position: absolute;
+  text-align: center;
+  padding: .5rem;
+  background: #FFFFFF;
+  color: #313639;
+  border: 1px solid #313639;
+  border-radius: 8px;
+  pointer-events: none;
+  font-size: 1.3rem;
+}
+
 </style>
 
 <div class="hero">
@@ -244,7 +256,7 @@ const selectorVf = Generators.input(selectorVfInput);
       <br>
       ${graphInput}
     </div>
-    <div class="card grid-colspan-2" style="max-height: 700px;"> <!-- Gráfico -->
+    <div class="card grid-colspan-2" style="max-height: 1000px;"> <!-- Gráfico -->
       ${selectorVsInput}
       ${limitVsInput}
       <div id="graphBarras" style="overflow-y: scroll">
@@ -301,7 +313,7 @@ const selectorVs = Generators.input(selectorVsInput);
 
 // Limitador de datos
 const limits = [];
-var nlims = 25;
+const nlims = 25;
 for(var i = 0; i < nlims; i++){
   limits[i] = parseInt(TSV.length * ((i + 1) / nlims), 10);
 }
@@ -313,34 +325,33 @@ const limitVs = Generators.input(limitVsInput);
 
 ```js
 // Datos
-var c_data = TSV;
-c_data = c_data.filter(function(d,i){
+const c_data = TSV.filter(function(d,i){
   return i < limitVs;
 });
 
 // Elige la primera key que no es un número
-var c_key = Object.keys(c_data[0]).find(c_key => c_data[0][c_key] === Object.values(c_data[0]).find((e) => isNaN(e)));
+const c_key = Object.keys(c_data[0]).find(c_key => c_data[0][c_key] === Object.values(c_data[0]).find((e) => isNaN(e)));
 
 // Dimensiones
-var c_width = [...new Set(c_data.map(item => item[c_key]))].length * 30,
-    c_height = 600,
-    c_marginTop = 20,
-    c_marginRight = 0,
-    c_marginBottom = 70,
-    c_marginLeft = 70;
+const c_width = [...new Set(c_data.map(item => item[c_key]))].length * 30,
+      c_height = 600,
+      c_marginTop = 20,
+      c_marginRight = 0,
+      c_marginBottom = 70,
+      c_marginLeft = 70;
 
 // Escala X
-var c_x = d3.scaleBand()
+const c_x = d3.scaleBand()
   .domain(d3.groupSort(c_data, ([d]) => -d[c_key], (d) => d[c_key]))
   .range([c_marginLeft, c_width - c_marginRight])
   .padding(0.1);
 
 // Escala Y
-var c_y = d3.scaleLinear()
+const c_y = d3.scaleLinear()
   .domain([0, d3.max(c_data, function(d) { return +d[selectorVs]; })])
   .range([c_height - c_marginBottom, c_marginTop]);
 
-var c_yAxis = d3.axisLeft(c_y)
+const c_yAxis = d3.axisLeft(c_y)
   .ticks(10)
   .tickSize(0);
 
@@ -400,53 +411,9 @@ c_svg.append('g')
 
 ```js
 // Dimensiones
-/*const tt_margin = 50,
-    tt_width = 500,
-    tt_height = 500,
-    tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
-
-// Datos
-const tt_data = TSV.filter(function(d,i){
-  return i < limitVs;
-});
-
-const tt_key = Object.keys(tt_data[0]).find(tt_key => tt_data[0][tt_key] === Object.values(tt_data[0]).find((e) => isNaN(e)));
-
-// Paleta de colores
-const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_data.map(item => item[selectorVs]))].length + 1));
-
-// SVG
-const tt_svg = d3.select('#graphSector2')
-  .attr('width', tt_width)
-  .attr('height', tt_height)
-  .append('g')
-    .attr('transform', `translate(${tt_width / 2}, ${tt_height / 2})`);
-
-// Layout del gráfico
-const tt_pie = d3.pie()
-  .sort(null)
-  .value(d => d[selectorVs]);
-
-const tt_arc = d3.arc()
-  .innerRadius(0)
-  .outerRadius(tt_radius);
-
-const tt_g = tt_svg.selectAll('.arc')
-  .data(tt_pie(tt_data))
-  .enter().append('g')
-  .attr('class', 'arc');
-
-tt_g.append('path')
-  .attr('d', tt_arc)
-  .attr('class', 'arc')
-  .style('fill', (d, i) => tt_color(i))
-  .style('stroke', 'white')
-  .style('stroke-width', 1);*/
-
-// Dimensiones
 const tt_margin = 20,
-    tt_width = 500,
-    tt_height = 500,
+    tt_width = 900,
+    tt_height = 900,
     tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
 
 // Datos
@@ -468,14 +435,12 @@ const tt_pie = d3.pie()
 // Generador de arcos
 const tt_arc = d3.arc()
   .innerRadius(0)
+  .outerRadius(tt_radius * 0.8);
+
+// Arcos para el ratón
+const tt_hoverArc = d3.arc()
+  .innerRadius(0)
   .outerRadius(tt_radius);
-
-const tt_labelRadius = tt_arc.outerRadius()() * 0.7;
-
-// Arco para el texto
-const tt_arcLabel = d3.arc()
-  .innerRadius(tt_labelRadius)
-  .outerRadius(tt_labelRadius);
 
 // SVG
 const tt_svg = d3.create('svg')
@@ -483,6 +448,11 @@ const tt_svg = d3.create('svg')
   .attr('height', tt_height)
   .attr('style', 'font: 14px sans-serif;')
   .attr('viewBox', [-tt_width / 2, -tt_height / 2, tt_width, tt_height]);
+
+// Tooltip
+var tt_hoverDiv = d3.select('#graphSector').append('div')
+  .attr('class', 'tooltip-donut')
+  .style('opacity', 0);
 
 // Sectores
 const tt_g = tt_svg.selectAll('.arc')
@@ -496,44 +466,35 @@ tt_g.append('path')
   .style('fill', (d, i) => tt_color(i))
   .style('fill-opacity', 0.8)
   .style('stroke', 'black')
-  .style('stroke-width', 1);
-
-// Labels
-/*tt_g.append('text')
-  .attr('transform', d => `translate(${tt_arcLabel.centroid(d)})`)
-  .text(d => `${d.data[tt_key]}: ${d.data[selectorVs].toLocaleString("es")}`)
-  .style('fill', 'white')
-  .style('text-anchor', 'middle');*/
-
-// Sectores
-/*tt_svg.append('g')
-    .attr('stroke', 'white')
-  .selectAll()
-  .data(d => tt_pie(d))
-  .join('path')
-    .attr('d', tt_arc)
-    .attr('fill', d => tt_color(d[selectorVs]))
-    .attr('stroke-width', '2px')
-    .attr('opacity', 0.7)
-  .append('title')
-    .text(d => `${d[tt_key]}: ${d[selectorVs].toLocaleString("es")}`);
-
-// Texto
-tt_svg.append('g')
-  .attr('text-anchor', 'middle')
-  .selectAll()
-  .data(d => tt_pie(d))
-  .join('text')
-    .attr('transform', d => `translate(${tt_arcLabel.centroid(d)})`)
-    .call(text => text.filter(d => (d.endAngle - d.startAngle) > 0.25).append("tspan")
-      .attr('y', '-0.4em')
-      .attr('font-weight', 'bold')
-      .text(d => d[tt_key]))
-    .call(text => text.filter(d => (d.endAngle - d.startAngle) > 0.25).append("tspan")
-      .attr('x', 0)
-      .attr('y', '0.7em')
-      .attr('fill-opacity', 0.7)
-      .text(d => (d3.format(",.1~f")((d.endAngle - d.startAngle) * 3.6)).toLocaleString("es") + "%"));*/
+  .style('stroke-width', 1)
+  .on('mouseover', function (d, i) { // Ratón encima del sector
+    // Resaltar sector
+    d3.select(this)
+      .style('fill-opacity', 1)
+      .transition().duration(500)
+      .attr('d', tt_hoverArc);
+    // Mostrar tooltip
+    tt_hoverDiv.transition()
+      .duration(50)
+      .style('opacity', 1);
+    // Texto
+    let label = tt_data.find(x => x[selectorVs] === (i.value).toString())[tt_key] + ': ' + i.value;
+    tt_hoverDiv.html(label)
+      // Coordenadas
+      .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 50 + 'px')
+      .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 75 + 'px');
+  })
+  .on('mouseout', function (d, i) { // Ratón sale del sector
+    // Volver sector a la normalidad
+    d3.select(this)
+      .style('fill-opacity', 0.8)
+      .transition().duration(500)
+      .attr('d', tt_arc);
+    // Ocultar tooltip
+    tt_hoverDiv.transition()
+      .duration(50)
+      .style('opacity', 0);
+  });
 ```
 
 ```js
