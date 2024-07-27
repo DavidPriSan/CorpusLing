@@ -219,6 +219,7 @@ const keys = Object.keys(archivo[0]);
 */
 const container = document.getElementById('tablaVf');
 
+// Borra tabla anterior (si existe)
 let tablaAnt = document.getElementById('tablaVer');
 if (tablaAnt != null) {
   tablaAnt.remove();
@@ -276,13 +277,15 @@ const selectorVf = Generators.input(selectorVfInput);
       ${graphInput}
     </div>
     <div class="card grid-colspan-2" style="max-height: 1000px;"> <!-- Gráfico -->
-      ${selectorVsInput}
-      ${limitVsInput}
+      <div id="graphButtons">
+        ${selectorVsInput}
+        ${limitVsInput}
+      </div>
       <div id="graphBarras" style="overflow-y: scroll">
-        ${display(c_svg.node())}
       </div>
       <div id="graphSector">
-        ${display(tt_svg.node())}
+      </div>
+      <div id="graphSunburst">
       </div>
     </div>
   </div>
@@ -300,7 +303,8 @@ const selectorVf = Generators.input(selectorVfInput);
 const graphInput = Inputs.button(
   [
     ["Gráfico de barras", (value) => 1],
-    ["Diagrama de sectores", (value) => 2]
+    ["Diagrama de sectores", (value) => 2],
+    ["Zoomable sunburst", (value) => 3]
   ],
   { value: 0 }
 );
@@ -312,16 +316,29 @@ const graph = Generators.input(graphInput);
 ```js
 const graphBarrasDiv = document.getElementById("graphBarras");
 const graphSectorDiv = document.getElementById("graphSector");
+const graphSunburstDiv = document.getElementById("graphSunburst");
+const graphButtonsDiv = document.getElementById("graphButtons");
 
 if (graph == 0) { // Sin seleccionar gráfico
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
+  graphSunburstDiv.hidden = true;
+  graphButtonsDiv.hidden = true;
 } else if (graph == 1) { // Barras
   graphBarrasDiv.hidden = false;
   graphSectorDiv.hidden = true;
+  graphSunburstDiv.hidden = true;
+  graphButtonsDiv.hidden = false;
 } else if (graph == 2) { // Sectores
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = false;
+  graphSunburstDiv.hidden = true;
+  graphButtonsDiv.hidden = false;
+}  else if (graph == 3) { // Zoomable Sunburst
+  graphBarrasDiv.hidden = true;
+  graphSectorDiv.hidden = true;
+  graphSunburstDiv.hidden = false;
+  graphButtonsDiv.hidden = true;
 }
 ```
 
@@ -369,8 +386,15 @@ const c_yAxis = d3.axisLeft(c_y)
   .ticks(10)
   .tickSize(0);
 
+// Borra gráfico anterior (si existe)
+let barrasAnt = document.getElementById('barras');
+if (barrasAnt != null) {
+  barrasAnt.remove();
+}
+
 // SVG
-const c_svg = d3.create('svg')
+const c_svg = d3.select('#graphBarras').append('svg')
+  .attr('id', 'barras')
   .attr('width', c_width)
   .attr('height', c_height)
   .attr('viewbox', [0, 0, c_width, c_height]);
@@ -456,8 +480,15 @@ const tt_hoverArc = d3.arc()
   .innerRadius(0)
   .outerRadius(tt_radius);
 
+// Borra gráfico anterior (si existe)
+let sectorAnt = document.getElementById('sector');
+if (sectorAnt != null) {
+  sectorAnt.remove();
+}
+
 // SVG
-const tt_svg = d3.create('svg')
+const tt_svg = d3.select('#graphSector').append('svg')
+  .attr('id', 'sector')
   .attr('width', tt_width)
   .attr('height', tt_height)
   .attr('style', 'font: 14px sans-serif;')
@@ -511,6 +542,137 @@ tt_g.append('path')
   });
 ```
 
-```js
+<!-- Zoomable sunburst -->
 
+```js
+if( archivo[0].children === undefined ) {
+  graphSunburstDiv.innerHTML = "<p>Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</p>";
+} else{
+  graphSunburstDiv.innerHTML = "";
+
+  // Dimensiones
+  const ng_width = 950,
+        ng_height = ng_width,
+        ng_radius = ng_width / 6;
+
+  // Paleta de colores
+  const ng_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, archivo[0].children.length + 1));
+
+
+  // Layout
+  const ng_hierarchy = d3.hierarchy(archivo[0])
+      .sum(d => d.value)
+      .sort((a, b) => b.value - a.value);
+  const ng_root = d3.partition()
+      .size([2 * Math.PI, ng_hierarchy.height + 1])
+    (ng_hierarchy);
+  ng_root.each(d => d.current = d);
+
+  // Generador de arcos
+  const ng_arc = d3.arc()
+    .startAngle(d => d.x0)
+    .endAngle(d => d.x1)
+    .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
+    .padRadius(ng_radius * 1.5)
+    .innerRadius(d => d.y0 * ng_radius)
+    .outerRadius(d => Math.max(d.y0 * ng_radius, d.y1 * ng_radius - 1))
+
+  // Borra gráfico anterior (si existe)
+  let sunburstAnt = document.getElementById('sunburst');
+  if (sunburstAnt != null) {
+    sunburstAnt.remove();
+  }
+
+  // SVG
+  const ng_svg = d3.select('#graphSunburst').append('svg')
+    .attr('id', 'sunburst')
+    .attr('viewBox', [-ng_width / 2, -ng_height / 2, ng_width, ng_width])
+    .style('font', '10px sans-serif');
+
+  // Arcos
+  const ng_path = ng_svg.append('g')
+    .selectAll('path')
+    .data(ng_root.descendants().slice(1))
+    .join('path')
+      .attr('fill', d => { while (d.depth > 1) d = d.parent; return ng_color(d.data.name); })
+      .attr('fill-opacity', d => arcVisible(d.current) ? (d.children ? 0.6 : 0.4) : 0)
+      .attr('pointer-events', d => arcVisible(d.current) ? "auto" : "none")
+
+      .attr('d', d => ng_arc(d.current));
+
+  // Clickables si tienen hijos
+  ng_path.filter(d => d.children)
+      .style('cursor', 'pointer')
+      .on('click', clicked);
+
+  const ng_format = d3.format(",d");
+  ng_path.append('title')
+      .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${ng_format(d.value)}`);
+
+  const ng_label = ng_svg.append('g')
+      .attr('pointer-events', 'none')
+      .attr('text-anchor', 'middle')
+      .style('user-select', 'none')
+    .selectAll('text')
+    .data(ng_root.descendants().slice(1))
+    .join('text')
+      .attr('dy', '0.35em')
+      .attr('fill-opacity', d => +labelVisible(d.current))
+      .attr('transform', d => labelTransform(d.current))
+      .text(d => d.data.name);
+
+  const ng_parent = ng_svg.append('circle')
+      .datum(ng_root)
+      .attr('r', ng_radius)
+      .attr('fill', 'none')
+      .attr('pointer-events', 'all')
+      .on('click', clicked);
+
+  // Zoom al clickar
+  function clicked(event, p) {
+    ng_parent.datum(p.parent || ng_root);
+
+    ng_root.each(d => d.target = {
+      x0: Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+      x1: Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+      y0: Math.max(0, d.y0 - p.depth),
+      y1: Math.max(0, d.y1 - p.depth)
+    });
+
+    const t = ng_svg.transition().duration(750);
+
+    ng_path.transition(t)
+        .tween("data", d => {
+          const i = d3.interpolate(d.current, d.target);
+          return t => d.current = i(t);
+        })
+      .filter(function(d) {
+        return +this.getAttribute("fill-opacity") || arcVisible(d.target);
+      })
+        .attr("fill-opacity", d => arcVisible(d.target) ? (d.children ? 0.6 : 0.4) : 0)
+        .attr("pointer-events", d => arcVisible(d.target) ? "auto" : "none") 
+
+        .attrTween("d", d => () => ng_arc(d.current));
+
+    ng_label.filter(function(d) {
+        return +this.getAttribute("fill-opacity") || labelVisible(d.target);
+      }).transition(t)
+        .attr("fill-opacity", d => +labelVisible(d.target))
+        .attrTween("transform", d => () => labelTransform(d.current));
+  }
+    
+  function arcVisible(d) {
+    return d.y1 <= 3 && d.y0 >= 1 && d.x1 > d.x0;
+  }
+
+  function labelVisible(d) {
+    return d.y1 <= 3 && d.y0 >= 1 && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.03;
+  }
+
+  function labelTransform(d) {
+    const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
+    const y = (d.y0 + d.y1) / 2 * ng_radius;
+    return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+  }
+}
 ```
