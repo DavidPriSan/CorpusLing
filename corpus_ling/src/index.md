@@ -212,6 +212,7 @@ const keys = Object.keys(archivo[0]);
   </div>
   <div class="card grid-colspan-2" style="max-height: 400px;"> <!-- Tabla -->
     ${selectorVfInput}
+    ${selectorADInput}
     <div id="tablaVf" class="scrollable-div"></div>
   </div>
 </div>
@@ -250,6 +251,17 @@ keys.forEach((item, i) => {
 thead.appendChild(tr);
 table.append(tr);
 
+// Ordenar conjunto
+if ((headerTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Ascendente')) {
+  archivo.sort((a,b) => (a[selectorVf] > b[selectorVf]) ? 1 : ((b[selectorVf] > a[selectorVf]) ? -1 : 0));
+} else if ((headerTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Descendente')) {
+  archivo.sort((a,b) => (a[selectorVf] < b[selectorVf]) ? 1 : ((b[selectorVf] < a[selectorVf]) ? -1 : 0));
+} else if ((headerTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Ascendente')){
+  archivo.sort((a,b) => a[selectorVf] - b[selectorVf]);
+} else if ((headerTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Descendente')){
+  archivo.sort((a,b) => b[selectorVf] - a[selectorVf]);
+}
+
 // Datos
 archivo.forEach((item) => {
   let tr = document.createElement('tr');
@@ -277,14 +289,12 @@ container.appendChild(table);
 <!-- Botones verificación -->
 
 ```js
-// Selector
-/*
-
-  NO FUNCIONA
-
-*/
+// Selector columna
 const selectorVfInput = Inputs.select(keys, {label: "Ordenar por"});
 const selectorVf = Generators.input(selectorVfInput);
+// Selector asc/desc
+const selectorADInput = Inputs.select(["Ascendente", "Descendente"]);
+const selectorAD = Generators.input(selectorADInput);
 ```
 
 <!-- Visualización -->
