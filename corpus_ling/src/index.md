@@ -306,7 +306,7 @@ const selectorAD = Generators.input(selectorADInput);
       <br>
       ${graphInput}
     </div>
-    <div class="card grid-colspan-2" style="max-height: 1000px;"> <!-- Gráfico -->
+    <div class="card grid-colspan-2" style="max-height: 1200px;"> <!-- Gráfico -->
       <div id="graphButtons">
         ${selectorVsInput}
         ${limitVsInput}
@@ -314,6 +314,9 @@ const selectorAD = Generators.input(selectorADInput);
       <div id="graphBarras" style="overflow-y: scroll">
       </div>
       <div id="graphSector">
+      </div>
+      <div id="sunburstButtons">
+        ${limitSbInput}
       </div>
       <div id="graphSunburst">
       </div>
@@ -348,27 +351,32 @@ const graphBarrasDiv = document.getElementById("graphBarras");
 const graphSectorDiv = document.getElementById("graphSector");
 const graphSunburstDiv = document.getElementById("graphSunburst");
 const graphButtonsDiv = document.getElementById("graphButtons");
+const sunburstButtonsDiv = document.getElementById("sunburstButtons");
 
 if (graph == 0) { // Sin seleccionar gráfico
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
   graphSunburstDiv.hidden = true;
   graphButtonsDiv.hidden = true;
+  sunburstButtonsDiv.hidden = true;
 } else if (graph == 1) { // Barras
   graphBarrasDiv.hidden = false;
   graphSectorDiv.hidden = true;
   graphSunburstDiv.hidden = true;
   graphButtonsDiv.hidden = false;
+  sunburstButtonsDiv.hidden = true;
 } else if (graph == 2) { // Sectores
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = false;
   graphSunburstDiv.hidden = true;
   graphButtonsDiv.hidden = false;
+  sunburstButtonsDiv.hidden = true;
 }  else if (graph == 3) { // Zoomable Sunburst
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
   graphSunburstDiv.hidden = false;
   graphButtonsDiv.hidden = true;
+  sunburstButtonsDiv.hidden = false;
 }
 ```
 
@@ -380,6 +388,10 @@ const selectorVs = Generators.input(selectorVsInput);
 // Limitador de datos
 const limitVsInput = Inputs.range([1, archivo.length], {step: 1, label: "Límite de elementos"});
 const limitVs = Generators.input(limitVsInput);
+
+// Limitador Sunburst
+const limitSbInput = Inputs.range([1, 50], {step: 1, label: "Límite de elementos"});
+const limitSb = Generators.input(limitSbInput);
 ```
 
 <!-- Gráfico de barras -->
@@ -580,17 +592,22 @@ if( archivo[0].children === undefined ) {
 } else{
   graphSunburstDiv.innerHTML = "";
 
+  // Datos
+  var tempArchivo = structuredClone(archivo);
+  var sb_data = limitData(tempArchivo[0], limitSb);
+  console.log("sb_data: ");
+  console.log(sb_data);
+
   // Dimensiones
   const ng_width = 950,
         ng_height = ng_width,
         ng_radius = ng_width / 6;
 
   // Paleta de colores
-  const ng_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, archivo[0].children.length + 1));
-
+  const ng_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, sb_data.children.length + 1));
 
   // Layout
-  const ng_hierarchy = d3.hierarchy(archivo[0])
+  const ng_hierarchy = d3.hierarchy(sb_data)
       .sum(d => d.value)
       .sort((a, b) => b.value - a.value);
   const ng_root = d3.partition()
@@ -707,6 +724,21 @@ if( archivo[0].children === undefined ) {
     const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
     const y = (d.y0 + d.y1) / 2 * ng_radius;
     return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+  }
+
+  // Limitar hijos
+  function limitData(d, i) {
+    if (d.hasOwnProperty('children')) {
+      console.log("d length before: " + d.children.length);
+      if(d.children.length > i) {
+        console.log("entra");
+        d.children = d.children.slice(0, i);
+      }
+      console.log("d length after: " + d.children.length);
+      d.children.forEach((e) => limitData(e, i));
+      return d;
+    }
+    return d;
   }
 }
 ```
