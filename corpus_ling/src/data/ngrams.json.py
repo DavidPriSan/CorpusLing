@@ -4,7 +4,7 @@ with open("coca_ngrams.tsv") as tsvfile:
   tsvreader = csv.reader(tsvfile, delimiter = "\t")
   jsoned = []
   for line in tsvreader:
-    if int(line[0]) >= 350:
+    if int(line[0]) >= 0:
       if jsoned == []:
         nuevo5 = {}
         nuevo5["name"] = line[5]
@@ -92,5 +92,6 @@ with open("coca_ngrams.tsv") as tsvfile:
 mjsoned = {}
 mjsoned["name"] = "m"
 mjsoned["children"] = jsoned
+out = [mjsoned]
 with open("ngrams.json", "w") as outfile:
-  json.dump(mjsoned, outfile)
+  json.dump(out, outfile)
