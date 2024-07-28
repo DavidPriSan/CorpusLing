@@ -1,5 +1,5 @@
 ---
-theme: [glacier, alt, wide]
+theme: [air, alt, wide]
 toc: false
 ---
 
@@ -199,9 +199,16 @@ const keys = Object.keys(archivo[0]);
 <div id="paso2">
 <div class="grid grid-cols-3">
   <div class="card"> <!-- Texto -->
-    <h1>Comprueba que tus datos se procesaron correctamente</h1>
-    <br>
-    
+    <h1>Comprueba que tus datos se ven bien</h1>
+    <p>
+      Comprueba que tus datos se han procesado correctamente. En la tabla de la derecha puedes ver los 
+      <span style="color: royalblue">números</span> 
+      de color azul y el 
+      <span style="color: seagreen">texto</span> 
+      en verde. Una 
+      <span style="color: darkred; background-color: lightpink">celda</span> 
+      de color rojo indica que hay un dato que no se corresponde con la columna o que hay un problema con el conjunto de datos.
+    </p>
   </div>
   <div class="card grid-colspan-2" style="max-height: 400px;"> <!-- Tabla -->
     ${selectorVfInput}
@@ -212,11 +219,6 @@ const keys = Object.keys(archivo[0]);
 
 ```js
 // Tabla verificación TSV
-/*
-
-  HACER LO DE NUMEROS EN UN COLOR Y TEXTO EN OTRO?
-
-*/
 const container = document.getElementById('tablaVf');
 
 // Borra tabla anterior (si existe)
@@ -229,11 +231,20 @@ let table = document.createElement('table');
 table.setAttribute('id', 'tablaVer');
 let thead = document.createElement('thead');
 let tr = document.createElement('tr');
+var headerTypes = [];
 
 // Encabezados
-keys.forEach((item) => {
+keys.forEach((item, i) => {
   let th = document.createElement('th');
   th.innerText = item;
+  // Color
+  if(isNaN(archivo[0][item])) { //Texto
+    headerTypes[i] = 'text';
+    th.style.color = 'seagreen';
+  } else { // Número
+    headerTypes[i] = 'number';
+    th.style.color = 'royalblue';
+  }
   tr.appendChild(th);
 });
 thead.appendChild(tr);
@@ -244,9 +255,18 @@ archivo.forEach((item) => {
   let tr = document.createElement('tr');
   let vals = Object.values(item);
 
-  vals.forEach((elem) => {
+  vals.forEach((elem, i) => {
     let td = document.createElement('td');
     td.innerText = elem;
+    // Color
+    if(isNaN(elem) && (headerTypes[i] === 'text')) { //Texto
+      td.style.color = 'seagreen';
+    } else if (!isNaN(elem) && (headerTypes[i] === 'number')){ // Número
+      td.style.color = 'royalblue';
+    } else {
+      td.style.color = 'darkred';
+      td.style.backgroundColor = 'lightpink';
+    }
     tr.appendChild(td);
   });
   table.appendChild(tr);
@@ -605,10 +625,12 @@ if( archivo[0].children === undefined ) {
       .style('cursor', 'pointer')
       .on('click', clicked);
 
+  // Title
   const ng_format = d3.format(",d");
   ng_path.append('title')
       .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${ng_format(d.value)}`);
 
+  // Label
   const ng_label = ng_svg.append('g')
       .attr('pointer-events', 'none')
       .attr('text-anchor', 'middle')
@@ -621,6 +643,7 @@ if( archivo[0].children === undefined ) {
       .attr('transform', d => labelTransform(d.current))
       .text(d => d.data.name);
 
+  // Para eventos del ratón
   const ng_parent = ng_svg.append('circle')
       .datum(ng_root)
       .attr('r', ng_radius)
@@ -669,6 +692,7 @@ if( archivo[0].children === undefined ) {
     return d.y1 <= 3 && d.y0 >= 1 && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.03;
   }
 
+  // Posición labels
   function labelTransform(d) {
     const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
     const y = (d.y0 + d.y1) / 2 * ng_radius;
