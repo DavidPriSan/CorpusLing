@@ -4,17 +4,18 @@
 <title>CorpusLing</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
-<link rel="preload" as="style" href="./_observablehq/theme-air,near-midnight.css">
+<link rel="preload" as="style" href="./_observablehq/theme-air,alt,wide.css">
+<link rel="preload" as="style" href="./_observablehq/stdlib/inputs.css">
 <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
-<link rel="stylesheet" type="text/css" href="./_observablehq/theme-air,near-midnight.css">
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-air,alt,wide.css">
+<link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.css">
 <link rel="modulepreload" href="./_observablehq/client.js">
 <link rel="modulepreload" href="./_observablehq/runtime.js">
 <link rel="modulepreload" href="./_observablehq/stdlib.js">
-<link rel="modulepreload" href="./_npm/d3-dsv@3.0.1/_esm.js">
-<link rel="modulepreload" href="./_npm/@observablehq/plot@0.6.14/_esm.js">
 <link rel="modulepreload" href="./_npm/d3@7.9.0/_esm.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/inputs.js">
+<link rel="modulepreload" href="./_npm/htl@0.3.1/_esm.js">
 <link rel="modulepreload" href="./_npm/isoformat@0.2.1/_esm.js">
-<link rel="modulepreload" href="./_npm/interval-tree-1d@1.0.4/_esm.js">
 <link rel="modulepreload" href="./_npm/d3-array@3.2.4/_esm.js">
 <link rel="modulepreload" href="./_npm/d3-axis@3.0.0/_esm.js">
 <link rel="modulepreload" href="./_npm/d3-brush@3.0.0/_esm.js">
@@ -24,6 +25,7 @@
 <link rel="modulepreload" href="./_npm/d3-delaunay@6.0.4/_esm.js">
 <link rel="modulepreload" href="./_npm/d3-dispatch@3.0.1/_esm.js">
 <link rel="modulepreload" href="./_npm/d3-drag@3.0.0/_esm.js">
+<link rel="modulepreload" href="./_npm/d3-dsv@3.0.1/_esm.js">
 <link rel="modulepreload" href="./_npm/d3-ease@3.0.1/_esm.js">
 <link rel="modulepreload" href="./_npm/d3-fetch@3.0.1/_esm.js">
 <link rel="modulepreload" href="./_npm/d3-force@3.0.0/_esm.js">
@@ -44,7 +46,6 @@
 <link rel="modulepreload" href="./_npm/d3-timer@3.0.1/_esm.js">
 <link rel="modulepreload" href="./_npm/d3-transition@3.0.1/_esm.js">
 <link rel="modulepreload" href="./_npm/d3-zoom@3.0.0/_esm.js">
-<link rel="modulepreload" href="./_npm/binary-search-bounds@2.0.5/_esm.js">
 <link rel="modulepreload" href="./_npm/internmap@2.0.3/_esm.js">
 <link rel="modulepreload" href="./_npm/delaunator@5.0.1/_esm.js">
 <link rel="modulepreload" href="./_npm/robust-predicates@3.0.2/_esm.js">
@@ -54,64 +55,661 @@
 import {define} from "./_observablehq/client.js";
 import {registerFile} from "./_observablehq/stdlib.js";
 
-registerFile("./aapl.csv", {"name":"./aapl.csv","mimeType":"text/csv","path":"./_file/aapl.18dc8bf6.csv","lastModified":1716288060634});
-registerFile("./penguins.csv", {"name":"./penguins.csv","mimeType":"text/csv","path":"./_file/penguins.dfee817d.csv","lastModified":1716288060653});
+registerFile("./TSV.png", {"name":"./TSV.png","mimeType":"image/png","path":"./_file/TSV.8cae6cc5.png","lastModified":1721814809529});
 
-define({id: "7935742a", inline: true, inputs: ["resize","Plot","aapl","display"], body: async (resize,Plot,aapl,display) => {
+define({id: "9b7a985f", inputs: ["Inputs","Generators"], outputs: ["pasosInput","pasos"], body: (Inputs,Generators) => {
+const pasosInput = Inputs.button(
+  [
+    ["1: Carga de datos", (value) => 1],
+    ["2: Verificación", (value) => 2],
+    ["3: Visualización", (value) => 3]
+  ],
+  { value: 0 }
+);
+const pasos = Generators.input(pasosInput);
+return {pasosInput,pasos};
+}});
+
+define({id: "00afe3dd", inline: true, inputs: ["pasosInput","display"], body: async (pasosInput,display) => {
 display(await(
-    resize((width) => Plot.plot({
-      title: "Your awesomeness over time 🚀",
-      subtitle: "Up and to the right!",
-      width,
-      y: {grid: true, label: "Awesomeness"},
-      marks: [
-        Plot.ruleY([0]),
-        Plot.lineY(aapl, {x: "Date", y: "Close", tip: true})
-      ]
-    }))
-  
+pasosInput
 ))
 }});
 
-define({id: "699041c1", inline: true, inputs: ["resize","Plot","penguins","display"], body: async (resize,Plot,penguins,display) => {
+define({id: "294defac", inputs: ["pasos"], outputs: ["paso1Div","paso2Div","paso3Div"], body: (pasos) => {
+const paso1Div = document.getElementById("paso1");
+const paso2Div = document.getElementById("paso2");
+const paso3Div = document.getElementById("paso3");
+
+if (pasos == 0) { // Sin seleccionar paso
+  paso1Div.hidden = true;
+  paso2Div.hidden = true;
+  paso3Div.hidden = true;
+} else if (pasos == 1) { // Paso 1 (Carga de datos)
+  paso1Div.hidden = false;
+  paso2Div.hidden = true;
+  paso3Div.hidden = true;
+} else if (pasos == 2) { // Paso 2 (Verificación)
+  paso1Div.hidden = true;
+  paso2Div.hidden = false;
+  paso3Div.hidden = true;
+} else if (pasos == 3) { // Paso 3 (Visualización)
+  paso1Div.hidden = true;
+  paso2Div.hidden = true;
+  paso3Div.hidden = false;
+}
+return {paso1Div,paso2Div,paso3Div};
+}});
+
+define({id: "01e02363", inputs: ["FileAttachment"], outputs: ["TSVpng"], body: (FileAttachment) => {
+// Imagenes
+const TSVpng = FileAttachment("./TSV.png").image({ width: 64 });
+return {TSVpng};
+}});
+
+define({id: "8680e008", inputs: ["Inputs","TSVpng","Generators"], outputs: ["cargaInput","carga"], body: (Inputs,TSVpng,Generators) => {
+// Botonera
+const cargaInput = Inputs.button(
+  [
+    [TSVpng, (value) => 1]
+  ], 
+  { value: 0 }
+);
+const carga = Generators.input(cargaInput);
+return {cargaInput,carga};
+}});
+
+define({id: "b72ab29d", inputs: ["Inputs","Generators"], outputs: ["archivoTSVInput","archivoTSV"], body: (Inputs,Generators) => {
+// Input TSV
+const archivoTSVInput = Inputs.file({
+  label: "Archivo TSV",
+  accept: ".tsv,.csv,.json",
+  required: true,
+  width: 310,
+});
+const archivoTSV = Generators.input(archivoTSVInput);
+return {archivoTSVInput,archivoTSV};
+}});
+
+define({id: "dbeaed21", inline: true, inputs: ["cargaInput","display"], body: async (cargaInput,display) => {
 display(await(
-    resize((width) => Plot.plot({
-      title: "How big are penguins, anyway? 🐧",
-      width,
-      grid: true,
-      x: {label: "Body mass (g)"},
-      y: {label: "Flipper length (mm)"},
-      color: {legend: true},
-      marks: [
-        Plot.linearRegressionY(penguins, {x: "body_mass_g", y: "flipper_length_mm", stroke: "species"}),
-        Plot.dot(penguins, {x: "body_mass_g", y: "flipper_length_mm", stroke: "species", tip: true})
-      ]
-    }))
-  
+cargaInput
 ))
 }});
 
-define({id: "74b65852", inputs: ["FileAttachment"], outputs: ["aapl","penguins"], body: (FileAttachment) => {
-const aapl = FileAttachment("./aapl.csv").csv({typed: true});
-const penguins = FileAttachment("./penguins.csv").csv({typed: true});
-return {aapl,penguins};
+define({id: "f08ed483", inline: true, inputs: ["archivoTSVInput","display"], body: async (archivoTSVInput,display) => {
+display(await(
+archivoTSVInput
+))
+}});
+
+define({id: "14165f7b", inputs: ["carga"], outputs: ["cargaDiv","TSVDiv","muestraTSVDiv"], body: (carga) => {
+const cargaDiv = document.getElementById("carga");
+const TSVDiv = document.getElementById("TSV");
+const muestraTSVDiv = document.getElementById("muestraTSV");
+
+if (carga == 0) { // Sin seleccionar modo
+  cargaDiv.innerHTML = "<p>Puedes elegir como quieres cargar tus datos pulsando los distintos botones de arriba.</p>";
+  TSVDiv.hidden = true;
+  muestraTSVDiv.hidden = true;
+} else if (carga == 1) { // Examinar TSV
+  cargaDiv.innerHTML = "<p>Examina el archivo de tu equipo haciendo click en el botón de abajo, el archivo puede ser TSV, CSV(siendo la primera línea del mismo los encabezados de las columnas en ambos casos) o JSON.</p><br>";
+  TSVDiv.hidden = false;
+  muestraTSVDiv.hidden = false;
+}
+return {cargaDiv,TSVDiv,muestraTSVDiv};
+}});
+
+define({id: "7af89e89", inputs: ["archivoTSV"], outputs: ["arch","archivo"], body: (archivoTSV) => {
+// Parseo TSV
+var arch;
+if (archivoTSV.name.split('.')[1] == 'tsv'){
+  var arch = archivoTSV.tsv();
+} else if (archivoTSV.name.split('.')[1] == 'csv'){
+  var arch = archivoTSV.csv( {typed: true} );
+} else if (archivoTSV.name.split('.')[1] == 'json'){
+  var arch = archivoTSV.json();
+}
+const archivo = arch;
+return {arch,archivo};
+}});
+
+define({id: "31b3dab5", inputs: ["muestraTSV","archivo"], outputs: ["keys"], body: (muestraTSV,archivo) => {
+muestraTSV.innerHTML = JSON.stringify(archivo);
+const keys = Object.keys(archivo[0]);
+return {keys};
+}});
+
+define({id: "84f1f889", inline: true, inputs: ["selectorVfInput","display"], body: async (selectorVfInput,display) => {
+display(await(
+selectorVfInput
+))
+}});
+
+define({id: "4a179013", inline: true, inputs: ["selectorADInput","display"], body: async (selectorADInput,display) => {
+display(await(
+selectorADInput
+))
+}});
+
+define({id: "226bb091", inputs: ["keys","archivo","selectorVf","selectorAD"], outputs: ["container","tablaAnt","table","thead","tr","headerTypes"], body: (keys,archivo,selectorVf,selectorAD) => {
+// Tabla verificación TSV
+const container = document.getElementById('tablaVf');
+
+// Borra tabla anterior (si existe)
+let tablaAnt = document.getElementById('tablaVer');
+if (tablaAnt != null) {
+  tablaAnt.remove();
+}
+
+let table = document.createElement('table');
+table.setAttribute('id', 'tablaVer');
+let thead = document.createElement('thead');
+let tr = document.createElement('tr');
+var headerTypes = [];
+
+// Encabezados
+keys.forEach((item, i) => {
+  let th = document.createElement('th');
+  th.innerText = item;
+  // Color
+  if(isNaN(archivo[0][item])) { //Texto
+    headerTypes[i] = 'text';
+    th.style.color = 'seagreen';
+  } else { // Número
+    headerTypes[i] = 'number';
+    th.style.color = 'royalblue';
+  }
+  tr.appendChild(th);
+});
+thead.appendChild(tr);
+table.append(tr);
+
+// Ordenar conjunto
+if ((headerTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Ascendente')) {
+  archivo.sort((a,b) => (a[selectorVf] > b[selectorVf]) ? 1 : ((b[selectorVf] > a[selectorVf]) ? -1 : 0));
+} else if ((headerTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Descendente')) {
+  archivo.sort((a,b) => (a[selectorVf] < b[selectorVf]) ? 1 : ((b[selectorVf] < a[selectorVf]) ? -1 : 0));
+} else if ((headerTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Ascendente')){
+  archivo.sort((a,b) => a[selectorVf] - b[selectorVf]);
+} else if ((headerTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Descendente')){
+  archivo.sort((a,b) => b[selectorVf] - a[selectorVf]);
+}
+
+// Datos
+archivo.forEach((item) => {
+  let tr = document.createElement('tr');
+  let vals = Object.values(item);
+
+  vals.forEach((elem, i) => {
+    let td = document.createElement('td');
+    td.innerText = elem;
+    // Color
+    if(isNaN(elem) && (headerTypes[i] === 'text')) { //Texto
+      td.style.color = 'seagreen';
+    } else if (!isNaN(elem) && (headerTypes[i] === 'number')){ // Número
+      td.style.color = 'royalblue';
+    } else {
+      td.style.color = 'darkred';
+      td.style.backgroundColor = 'lightpink';
+    }
+    tr.appendChild(td);
+  });
+  table.appendChild(tr);
+});
+container.appendChild(table);
+return {container,tablaAnt,table,thead,tr,headerTypes};
+}});
+
+define({id: "40538ca7", inputs: ["Inputs","keys","Generators"], outputs: ["selectorVfInput","selectorVf","selectorADInput","selectorAD"], body: (Inputs,keys,Generators) => {
+// Selector columna
+const selectorVfInput = Inputs.select(keys, {label: "Ordenar por"});
+const selectorVf = Generators.input(selectorVfInput);
+// Selector asc/desc
+const selectorADInput = Inputs.select(["Ascendente", "Descendente"]);
+const selectorAD = Generators.input(selectorADInput);
+return {selectorVfInput,selectorVf,selectorADInput,selectorAD};
+}});
+
+define({id: "84ae4f69", inline: true, inputs: ["graphInput","display"], body: async (graphInput,display) => {
+display(await(
+graphInput
+))
+}});
+
+define({id: "742f3895", inline: true, inputs: ["selectorVsInput","display"], body: async (selectorVsInput,display) => {
+display(await(
+selectorVsInput
+))
+}});
+
+define({id: "a5c43da8", inline: true, inputs: ["limitVsInput","display"], body: async (limitVsInput,display) => {
+display(await(
+limitVsInput
+))
+}});
+
+define({id: "5e9b754b", inline: true, inputs: ["limitSbInput","display"], body: async (limitSbInput,display) => {
+display(await(
+limitSbInput
+))
+}});
+
+define({id: "539d631a", body: () => {
+// Imagenes
+
+}});
+
+define({id: "331e4bcc", inputs: ["Inputs","Generators"], outputs: ["graphInput","graph"], body: (Inputs,Generators) => {
+// Botonera gráficos
+const graphInput = Inputs.button(
+  [
+    ["Gráfico de barras", (value) => 1],
+    ["Diagrama de sectores", (value) => 2],
+    ["Zoomable sunburst", (value) => 3]
+  ],
+  { value: 0 }
+);
+const graph = Generators.input(graphInput);
+return {graphInput,graph};
+}});
+
+define({id: "b43675ff", inputs: ["graph"], outputs: ["graphBarrasDiv","graphSectorDiv","graphSunburstDiv","graphButtonsDiv","sunburstButtonsDiv"], body: (graph) => {
+const graphBarrasDiv = document.getElementById("graphBarras");
+const graphSectorDiv = document.getElementById("graphSector");
+const graphSunburstDiv = document.getElementById("graphSunburst");
+const graphButtonsDiv = document.getElementById("graphButtons");
+const sunburstButtonsDiv = document.getElementById("sunburstButtons");
+
+if (graph == 0) { // Sin seleccionar gráfico
+  graphBarrasDiv.hidden = true;
+  graphSectorDiv.hidden = true;
+  graphSunburstDiv.hidden = true;
+  graphButtonsDiv.hidden = true;
+  sunburstButtonsDiv.hidden = true;
+} else if (graph == 1) { // Barras
+  graphBarrasDiv.hidden = false;
+  graphSectorDiv.hidden = true;
+  graphSunburstDiv.hidden = true;
+  graphButtonsDiv.hidden = false;
+  sunburstButtonsDiv.hidden = true;
+} else if (graph == 2) { // Sectores
+  graphBarrasDiv.hidden = true;
+  graphSectorDiv.hidden = false;
+  graphSunburstDiv.hidden = true;
+  graphButtonsDiv.hidden = false;
+  sunburstButtonsDiv.hidden = true;
+}  else if (graph == 3) { // Zoomable Sunburst
+  graphBarrasDiv.hidden = true;
+  graphSectorDiv.hidden = true;
+  graphSunburstDiv.hidden = false;
+  graphButtonsDiv.hidden = true;
+  sunburstButtonsDiv.hidden = false;
+}
+return {graphBarrasDiv,graphSectorDiv,graphSunburstDiv,graphButtonsDiv,sunburstButtonsDiv};
+}});
+
+define({id: "e81a492e", inputs: ["Inputs","keys","Generators","archivo"], outputs: ["selectorVsInput","selectorVs","limitVsInput","limitVs","limitSbInput","limitSb"], body: (Inputs,keys,Generators,archivo) => {
+// Selector de columna
+const selectorVsInput = Inputs.select(keys, {label: "Seleccionar columna"});
+const selectorVs = Generators.input(selectorVsInput);
+
+// Limitador de datos
+const limitVsInput = Inputs.range([1, archivo.length], {step: 1, label: "Límite de elementos"});
+const limitVs = Generators.input(limitVsInput);
+
+// Limitador Sunburst
+const limitSbInput = Inputs.range([1, 50], {step: 1, label: "Límite de elementos"});
+const limitSb = Generators.input(limitSbInput);
+return {selectorVsInput,selectorVs,limitVsInput,limitVs,limitSbInput,limitSb};
+}});
+
+define({id: "65cc87f8", inputs: ["archivo","limitVs","d3","selectorVs"], outputs: ["c_data","c_key","c_width","c_height","c_marginTop","c_marginRight","c_marginBottom","c_marginLeft","c_x","c_y","c_yAxis","barrasAnt","c_svg"], body: (archivo,limitVs,d3,selectorVs) => {
+// Datos
+const c_data = archivo.filter(function(d,i){
+  return i < limitVs;
+});
+
+// Elige la primera key que no es un número
+const c_key = Object.keys(c_data[0]).find(c_key => c_data[0][c_key] === Object.values(c_data[0]).find((e) => isNaN(e)));
+
+// Dimensiones
+const c_width = Math.max(200, [...new Set(c_data.map(item => item[c_key]))].length * 30),
+      c_height = 600,
+      c_marginTop = 20,
+      c_marginRight = 0,
+      c_marginBottom = 70,
+      c_marginLeft = 70;
+
+// Escala X
+const c_x = d3.scaleBand()
+  .domain(d3.groupSort(c_data, ([d]) => -d[c_key], (d) => d[c_key]))
+  .range([c_marginLeft, c_width - c_marginRight])
+  .padding(0.1);
+
+// Escala Y
+const c_y = d3.scaleLinear()
+  .domain([0, d3.max(c_data, function(d) { return +d[selectorVs]; })])
+  .range([c_height - c_marginBottom, c_marginTop]);
+
+const c_yAxis = d3.axisLeft(c_y)
+  .ticks(10)
+  .tickSize(0);
+
+// Borra gráfico anterior (si existe)
+let barrasAnt = document.getElementById('barras');
+if (barrasAnt != null) {
+  barrasAnt.remove();
+}
+
+// SVG
+const c_svg = d3.select('#graphBarras').append('svg')
+  .attr('id', 'barras')
+  .attr('width', c_width)
+  .attr('height', c_height)
+  .attr('viewbox', [0, 0, c_width, c_height]);
+
+// Malla
+c_svg.selectAll('line.horizontal-grid')
+  .data(c_y.ticks(10))
+  .enter()
+  .append('line')
+  .attr('class', 'horizontal-grid')
+  .attr('x1', c_marginLeft)
+  .attr('y1', (d) => { return c_y(d); })
+  .attr('x2', c_width)
+  .attr('y2', (d) => { return c_y(d); })
+  .style('stroke', 'gray')
+  .style('stroke-width', 0.5)
+  .style('stroke-dasharray', '3 3');
+
+// Barras
+c_svg.append('g')
+  .attr('fill', 'steelblue')
+  .selectAll()
+  .data(c_data)
+  .join('rect')
+    .attr('x', (d) => c_x(d[c_key]))
+    .attr('y', (d) => c_y(d[selectorVs]))
+    .attr('height', (d) => (c_height - c_marginBottom) - c_y(d[selectorVs]))
+    .attr('width', c_x.bandwidth());
+
+// Eje X
+c_svg.append('g')
+  .attr('transform', `translate(0,${c_height - c_marginBottom})`)
+  .call(d3.axisBottom(c_x).tickSizeOuter(0))
+  .selectAll('text')
+    .attr('transform', 'translate(-10,0)rotate(-45)')
+    .style('text-anchor', 'end');
+
+// Eje Y
+c_svg.append('g')
+  .attr('transform', `translate(${c_marginLeft},0)`)
+  .call(c_yAxis)
+  .call(g => g.select('.domain').remove())
+  .call(g => g.append('text')
+    .attr('x', -c_marginLeft)
+    .attr('y', 10)
+    .attr('fill', 'currentColor')
+    .attr('text-anchor', 'start')
+    .text('↑ ' + selectorVs));
+return {c_data,c_key,c_width,c_height,c_marginTop,c_marginRight,c_marginBottom,c_marginLeft,c_x,c_y,c_yAxis,barrasAnt,c_svg};
+}});
+
+define({id: "aa954478", inputs: ["archivo","limitVs","d3","selectorVs"], outputs: ["tt_margin","tt_width","tt_height","tt_radius","tt_data","tt_key","tt_color","tt_pie","tt_arc","tt_hoverArc","sectorAnt","tt_svg","tt_hoverDiv","tt_g"], body: (archivo,limitVs,d3,selectorVs) => {
+// Dimensiones
+const tt_margin = 20,
+    tt_width = 900,
+    tt_height = 900,
+    tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
+
+// Datos
+const tt_data = archivo.filter(function(d,i){
+  return i < limitVs;
+});
+
+// Key para identificar elementos (primera no numérica)
+const tt_key = Object.keys(tt_data[0]).find(tt_key => tt_data[0][tt_key] === Object.values(tt_data[0]).find((e) => isNaN(e)));
+
+// Paleta de colores
+const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_data.map(item => item[selectorVs]))].length + 1));
+
+// Layout del gráfico
+const tt_pie = d3.pie()
+  .sort(null)
+  .value(d => d[selectorVs]);
+
+// Generador de arcos
+const tt_arc = d3.arc()
+  .innerRadius(0)
+  .outerRadius(tt_radius * 0.8);
+
+// Arcos para el ratón
+const tt_hoverArc = d3.arc()
+  .innerRadius(0)
+  .outerRadius(tt_radius);
+
+// Borra gráfico anterior (si existe)
+let sectorAnt = document.getElementById('sector');
+if (sectorAnt != null) {
+  sectorAnt.remove();
+}
+
+// SVG
+const tt_svg = d3.select('#graphSector').append('svg')
+  .attr('id', 'sector')
+  .attr('width', tt_width)
+  .attr('height', tt_height)
+  .attr('style', 'font: 14px sans-serif;')
+  .attr('viewBox', [-tt_width / 2, -tt_height / 2, tt_width, tt_height]);
+
+// Tooltip
+var tt_hoverDiv = d3.select('#graphSector').append('div')
+  .attr('class', 'tooltip-donut')
+  .style('opacity', 0);
+
+// Sectores
+const tt_g = tt_svg.selectAll('.arc')
+  .data(tt_pie(tt_data))
+  .enter().append('g')
+  .attr('class', 'arc');
+
+tt_g.append('path')
+  .attr('d', tt_arc)
+  .attr('class', 'arc')
+  .style('fill', (d, i) => tt_color(i))
+  .style('fill-opacity', 0.8)
+  .style('stroke', 'black')
+  .style('stroke-width', 1)
+  .on('mouseover', function (d, i) { // Ratón encima del sector
+    // Resaltar sector
+    d3.select(this)
+      .style('fill-opacity', 1)
+      .transition().duration(500)
+      .attr('d', tt_hoverArc);
+    // Mostrar tooltip
+    tt_hoverDiv.transition()
+      .duration(50)
+      .style('opacity', 1);
+    // Texto
+    let label = tt_data.find(x => x[selectorVs] === (i.value).toString())[tt_key] + ': ' + i.value;
+    tt_hoverDiv.html(label)
+      // Coordenadas
+      .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 150 + 'px')
+      .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 175 + 'px');
+  })
+  .on('mouseout', function (d, i) { // Ratón sale del sector
+    // Volver sector a la normalidad
+    d3.select(this)
+      .style('fill-opacity', 0.8)
+      .transition().duration(500)
+      .attr('d', tt_arc);
+    // Ocultar tooltip
+    tt_hoverDiv.transition()
+      .duration(50)
+      .style('opacity', 0);
+  });
+return {tt_margin,tt_width,tt_height,tt_radius,tt_data,tt_key,tt_color,tt_pie,tt_arc,tt_hoverArc,sectorAnt,tt_svg,tt_hoverDiv,tt_g};
+}});
+
+define({id: "c9a7d1c8", inputs: ["archivo","graphSunburstDiv","structuredClone","limitSb","d3"], body: (archivo,graphSunburstDiv,structuredClone,limitSb,d3) => {
+if( archivo[0].children === undefined ) {
+  graphSunburstDiv.innerHTML = "<p>Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</p>";
+} else{
+  graphSunburstDiv.innerHTML = "";
+
+  // Datos
+  var tempArchivo = structuredClone(archivo);
+  var sb_data = limitData(tempArchivo[0], limitSb);
+  console.log("sb_data: ");
+  console.log(sb_data);
+
+  // Dimensiones
+  const ng_width = 950,
+        ng_height = ng_width,
+        ng_radius = ng_width / 6;
+
+  // Paleta de colores
+  const ng_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, sb_data.children.length + 1));
+
+  // Layout
+  const ng_hierarchy = d3.hierarchy(sb_data)
+      .sum(d => d.value)
+      .sort((a, b) => b.value - a.value);
+  const ng_root = d3.partition()
+      .size([2 * Math.PI, ng_hierarchy.height + 1])
+    (ng_hierarchy);
+  ng_root.each(d => d.current = d);
+
+  // Generador de arcos
+  const ng_arc = d3.arc()
+    .startAngle(d => d.x0)
+    .endAngle(d => d.x1)
+    .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
+    .padRadius(ng_radius * 1.5)
+    .innerRadius(d => d.y0 * ng_radius)
+    .outerRadius(d => Math.max(d.y0 * ng_radius, d.y1 * ng_radius - 1))
+
+  // Borra gráfico anterior (si existe)
+  let sunburstAnt = document.getElementById('sunburst');
+  if (sunburstAnt != null) {
+    sunburstAnt.remove();
+  }
+
+  // SVG
+  const ng_svg = d3.select('#graphSunburst').append('svg')
+    .attr('id', 'sunburst')
+    .attr('viewBox', [-ng_width / 2, -ng_height / 2, ng_width, ng_width])
+    .style('font', '10px sans-serif');
+
+  // Arcos
+  const ng_path = ng_svg.append('g')
+    .selectAll('path')
+    .data(ng_root.descendants().slice(1))
+    .join('path')
+      .attr('fill', d => { while (d.depth > 1) d = d.parent; return ng_color(d.data.name); })
+      .attr('fill-opacity', d => arcVisible(d.current) ? (d.children ? 0.6 : 0.4) : 0)
+      .attr('pointer-events', d => arcVisible(d.current) ? "auto" : "none")
+
+      .attr('d', d => ng_arc(d.current));
+
+  // Clickables si tienen hijos
+  ng_path.filter(d => d.children)
+      .style('cursor', 'pointer')
+      .on('click', clicked);
+
+  // Title
+  const ng_format = d3.format(",d");
+  ng_path.append('title')
+      .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${ng_format(d.value)}`);
+
+  // Label
+  const ng_label = ng_svg.append('g')
+      .attr('pointer-events', 'none')
+      .attr('text-anchor', 'middle')
+      .style('user-select', 'none')
+    .selectAll('text')
+    .data(ng_root.descendants().slice(1))
+    .join('text')
+      .attr('dy', '0.35em')
+      .attr('fill-opacity', d => +labelVisible(d.current))
+      .attr('transform', d => labelTransform(d.current))
+      .text(d => d.data.name);
+
+  // Para eventos del ratón
+  const ng_parent = ng_svg.append('circle')
+      .datum(ng_root)
+      .attr('r', ng_radius)
+      .attr('fill', 'none')
+      .attr('pointer-events', 'all')
+      .on('click', clicked);
+
+  // Zoom al clickar
+  function clicked(event, p) {
+    ng_parent.datum(p.parent || ng_root);
+
+    ng_root.each(d => d.target = {
+      x0: Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+      x1: Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+      y0: Math.max(0, d.y0 - p.depth),
+      y1: Math.max(0, d.y1 - p.depth)
+    });
+
+    const t = ng_svg.transition().duration(750);
+
+    ng_path.transition(t)
+        .tween("data", d => {
+          const i = d3.interpolate(d.current, d.target);
+          return t => d.current = i(t);
+        })
+      .filter(function(d) {
+        return +this.getAttribute("fill-opacity") || arcVisible(d.target);
+      })
+        .attr("fill-opacity", d => arcVisible(d.target) ? (d.children ? 0.6 : 0.4) : 0)
+        .attr("pointer-events", d => arcVisible(d.target) ? "auto" : "none") 
+
+        .attrTween("d", d => () => ng_arc(d.current));
+
+    ng_label.filter(function(d) {
+        return +this.getAttribute("fill-opacity") || labelVisible(d.target);
+      }).transition(t)
+        .attr("fill-opacity", d => +labelVisible(d.target))
+        .attrTween("transform", d => () => labelTransform(d.current));
+  }
+    
+  function arcVisible(d) {
+    return d.y1 <= 3 && d.y0 >= 1 && d.x1 > d.x0;
+  }
+
+  function labelVisible(d) {
+    return d.y1 <= 3 && d.y0 >= 1 && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.03;
+  }
+
+  // Posición labels
+  function labelTransform(d) {
+    const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
+    const y = (d.y0 + d.y1) / 2 * ng_radius;
+    return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+  }
+
+  // Limitar hijos
+  function limitData(d, i) {
+    if (d.hasOwnProperty('children')) {
+      console.log("d length before: " + d.children.length);
+      if(d.children.length > i) {
+        console.log("entra");
+        d.children = d.children.slice(0, i);
+      }
+      console.log("d length after: " + d.children.length);
+      d.children.forEach((e) => limitData(e, i));
+      return d;
+    }
+    return d;
+  }
+}
 }});
 
 </script>
-<input id="observablehq-sidebar-toggle" type="checkbox" title="Toggle sidebar">
-<label id="observablehq-sidebar-backdrop" for="observablehq-sidebar-toggle"></label>
-<nav id="observablehq-sidebar">
-  <ol>
-    <label id="observablehq-sidebar-close" for="observablehq-sidebar-toggle"></label>
-    <li class="observablehq-link observablehq-link-active"><a href="./">CorpusLing</a></li>
-  </ol>
-  <ol>
-    <li class="observablehq-link"><a href="./example-dashboard">Example dashboard</a></li>
-    <li class="observablehq-link"><a href="./example-report">Example report</a></li>
-    <li class="observablehq-link"><a href="./pruebas">Pruebas</a></li>
-  </ol>
-</nav>
-<script>{Object.assign(document.createElement("a"),{href:""}).password&&location.replace(location.href);const e=document.querySelector("#observablehq-sidebar"),t=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?t.checked=r==="true":t.indeterminate=!0;for(const o of document.querySelectorAll("#observablehq-sidebar summary")){const s=o.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${o.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
 <div id="observablehq-center">
 <main id="observablehq-main" class="observablehq">
 <style>
@@ -154,45 +752,124 @@ return {aapl,penguins};
   }
 }
 
+.scrollable-div {
+  height: 350px;
+  overflow-y: scroll;
+}
+
+div.tooltip-donut {
+  position: absolute;
+  text-align: center;
+  padding: .5rem;
+  background: #FFFFFF;
+  color: #313639;
+  border: 1px solid #313639;
+  border-radius: 8px;
+  pointer-events: none;
+  font-size: 1.3rem;
+}
+
 </style>
 <div class="hero">
   <h1>CorpusLing</h1>
-  <h2></h2>
+  <h2>TFG Grado en Ingeniería Informática</h2>
 </div>
-<div class="grid grid-cols-2" style="grid-auto-rows: 504px;">
-  <div class="card"><span id="cell-7935742a"><span class="observablehq-loading"></span></span></div>
-  <div class="card"><span id="cell-699041c1"><span class="observablehq-loading"></span></span></div>
+<!-- Botones pasos -->
+<div id="cell-9b7a985f" class="observablehq observablehq--block"></div>
+<div class="card">
+  <span id="cell-00afe3dd"><span class="observablehq-loading"></span></span>
 </div>
-<div id="cell-74b65852" class="observablehq observablehq--block"></div>
-<hr>
-<h2 id="next-steps" tabindex="-1"><a class="observablehq-header-anchor" href="#next-steps">Next steps</a></h2>
-<p>Here are some ideas of things you could try…</p>
-<div class="grid grid-cols-4">
-  <div class="card">
-    Chart your own data using <a href="https://observablehq.com/framework/lib/plot" target="_blank" rel="noopener noreferrer"><code>Plot</code></a> and <a href="https://observablehq.com/framework/files" target="_blank" rel="noopener noreferrer"><code>FileAttachment</code></a>. Make it responsive using <a href="https://observablehq.com/framework/display#responsive-display" target="_blank" rel="noopener noreferrer"><code>resize</code></a>.
+<!-- Procesamiento pasos -->
+<div id="cell-294defac" class="observablehq observablehq--block"></div>
+<!-- Botones carga de datos -->
+<div id="cell-01e02363" class="observablehq observablehq--block"></div>
+<div id="cell-8680e008" class="observablehq observablehq--block"></div>
+<!-- Modo de carga -->
+<div id="cell-b72ab29d" class="observablehq observablehq--block"></div>
+<div id="paso1">
+<div class="grid grid-cols-2">
+  <div class="card"> <!-- Elegir modo -->
+    <h1>Elige el modo de carga de datos</h1>
+    <br>
+    <span id="cell-dbeaed21"><span class="observablehq-loading"></span></span>
+    <br>
+    <div id="carga"></div>
+    <div id="TSV">
+      <span id="cell-f08ed483"><span class="observablehq-loading"></span></span>
+    </div>
   </div>
-  <div class="card">
-    Create a <a href="https://observablehq.com/framework/project-structure" target="_blank" rel="noopener noreferrer">new page</a> by adding a Markdown file (<code>whatever.md</code>) to the <code>src</code> folder.
-  </div>
-  <div class="card">
-    Add a drop-down menu using <a href="https://observablehq.com/framework/inputs/select" target="_blank" rel="noopener noreferrer"><code>Inputs.select</code></a> and use it to filter the data shown in a chart.
-  </div>
-  <div class="card">
-    Write a <a href="https://observablehq.com/framework/loaders" target="_blank" rel="noopener noreferrer">data loader</a> that queries a local database or API, generating a data snapshot on build.
-  </div>
-  <div class="card">
-    Import a <a href="https://observablehq.com/framework/imports" target="_blank" rel="noopener noreferrer">recommended library</a> from npm, such as <a href="https://observablehq.com/framework/lib/leaflet" target="_blank" rel="noopener noreferrer">Leaflet</a>, <a href="https://observablehq.com/framework/lib/dot" target="_blank" rel="noopener noreferrer">GraphViz</a>, <a href="https://observablehq.com/framework/lib/tex" target="_blank" rel="noopener noreferrer">TeX</a>, or <a href="https://observablehq.com/framework/lib/duckdb" target="_blank" rel="noopener noreferrer">DuckDB</a>.
-  </div>
-  <div class="card">
-    Ask for help, or share your work or ideas, on the <a href="https://talk.observablehq.com/" target="_blank" rel="noopener noreferrer">Observable forum</a>.
-  </div>
-  <div class="card">
-    Visit <a href="https://github.com/observablehq/framework" target="_blank" rel="noopener noreferrer">Framework on GitHub</a> and give us a star. Or file an issue if you’ve found a bug!
+  <div class="card" style="max-height: 350px;"> <!-- Visualización de datos -->
+    <div id="muestraTSV" class="scrollable-div"></div>
   </div>
 </div>
+</div>
+<div id="cell-14165f7b" class="observablehq observablehq--block"></div>
+<div id="cell-7af89e89" class="observablehq observablehq--block"></div>
+<div id="cell-31b3dab5" class="observablehq observablehq--block"></div>
+<!-- Verificación -->
+<div id="paso2">
+<div class="grid grid-cols-3">
+  <div class="card"> <!-- Texto -->
+    <h1>Comprueba que tus datos se ven bien</h1>
+    <p>
+      Comprueba que tus datos se han procesado correctamente. En la tabla de la derecha puedes ver los 
+      <span style="color: royalblue">números</span> 
+      de color azul y el 
+      <span style="color: seagreen">texto</span> 
+      en verde. Una 
+      <span style="color: darkred; background-color: lightpink">celda</span> 
+      de color rojo indica que hay un dato que no se corresponde con la columna o que hay un problema con el conjunto de datos.
+    </p>
+  </div>
+  <div class="card grid-colspan-2" style="max-height: 400px;"> <!-- Tabla -->
+    <span id="cell-84f1f889"><span class="observablehq-loading"></span></span>
+    <span id="cell-4a179013"><span class="observablehq-loading"></span></span>
+    <div id="tablaVf" class="scrollable-div"></div>
+  </div>
+</div>
+</div>
+<div id="cell-226bb091" class="observablehq observablehq--block"></div>
+<!-- Botones verificación -->
+<div id="cell-40538ca7" class="observablehq observablehq--block"></div>
+<!-- Visualización -->
+<div id="paso3">
+  <div class="grid grid-cols-3">
+    <div class="card"> <!-- Texto -->
+      <h1>Elige el tipo de gráfico</h1>
+      <br>
+      <span id="cell-84ae4f69"><span class="observablehq-loading"></span></span>
+    </div>
+    <div class="card grid-colspan-2" style="max-height: 1200px;"> <!-- Gráfico -->
+      <div id="graphButtons">
+        <span id="cell-742f3895"><span class="observablehq-loading"></span></span>
+        <span id="cell-a5c43da8"><span class="observablehq-loading"></span></span>
+      </div>
+      <div id="graphBarras" style="overflow-y: scroll">
+      </div>
+      <div id="graphSector">
+      </div>
+      <div id="sunburstButtons">
+        <span id="cell-5e9b754b"><span class="observablehq-loading"></span></span>
+      </div>
+      <div id="graphSunburst">
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Botones visualización -->
+<div id="cell-539d631a" class="observablehq observablehq--block"></div>
+<div id="cell-331e4bcc" class="observablehq observablehq--block"></div>
+<!-- Elección gráfico -->
+<div id="cell-b43675ff" class="observablehq observablehq--block"></div>
+<div id="cell-e81a492e" class="observablehq observablehq--block"></div>
+<!-- Gráfico de barras -->
+<div id="cell-65cc87f8" class="observablehq observablehq--block"></div>
+<!-- Diagrama de sectores -->
+<div id="cell-aa954478" class="observablehq observablehq--block"></div>
+<!-- Zoomable sunburst -->
+<div id="cell-c9a7d1c8" class="observablehq observablehq--block"></div>
 </main>
 <footer id="observablehq-footer">
-<nav><a rel="next" href="./example-dashboard"><span>Example dashboard</span></a></nav>
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-06-07T13:16:22">Jun 7, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-07-29T14:32:59">Jul 29, 2024</a>.</div>
 </footer>
 </div>
