@@ -60,6 +60,21 @@ div.tooltip-donut {
   font-size: 1.3rem;
 }
 
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 5px;
+}
+
+table {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+th {
+  background-color: gainsboro;
+}
+
 </style>
 
 <div class="hero">
@@ -218,8 +233,10 @@ const keys = Object.keys(archivo[0]);
 </div>
 </div>
 
+<!-- Tabla -->
+
 ```js
-// Tabla verificación TSV
+// Tabla verificación
 const container = document.getElementById('tablaVf');
 
 // Borra tabla anterior (si existe)
@@ -239,7 +256,7 @@ keys.forEach((item, i) => {
   let th = document.createElement('th');
   th.innerText = item;
   // Color
-  if(isNaN(archivo[0][item])) { //Texto
+  if(isNaN(archivo[0][item])) { // Texto
     headerTypes[i] = 'text';
     th.style.color = 'seagreen';
   } else { // Número
@@ -271,14 +288,86 @@ archivo.forEach((item) => {
     let td = document.createElement('td');
     td.innerText = elem;
     // Color
-    if(isNaN(elem) && (headerTypes[i] === 'text')) { //Texto
+    if(isNaN(elem) && (headerTypes[i] === 'text')) { // Texto
       td.style.color = 'seagreen';
     } else if (!isNaN(elem) && (headerTypes[i] === 'number')){ // Número
       td.style.color = 'royalblue';
-    } else {
+    } else { // Error
       td.style.color = 'darkred';
       td.style.backgroundColor = 'lightpink';
     }
+
+    // Celda editable
+    td.onclick = function() {
+      // Checkea si ya está clickada
+      if (this.hasAttribute('data-clicked')) {
+        return;
+      }
+
+      this.setAttribute('data-clicked', 'yes');
+      this.setAttribute('data-text', this.innerText);
+
+      // Input
+      var input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.value = this.innerText;
+      input.style.width = (this.offsetWidth - 5) + 'px';
+      input.style.height = (this.offsetHeight - 5) + 'px';
+      input.style.border = '0px';
+      input.style.fontFamily = 'inherit';
+      input.style.fontSize = 'inherit';
+      input.style.textAlign = 'inherit';
+      input.style.backgroundColor = 'LightGoldenRodYellow';
+
+      input.onblur = function() {
+        var td_parent = input.parentElement;
+        var orig_text = td.getAttribute('data-text');
+        var curr_text = this.value;
+
+        if (orig_text != curr_text) { // Hay cambios
+          td.removeAttribute('data-clicked');
+          td.removeAttribute('data-text');
+          // Modificar objeto
+          var new_item = structuredClone(item);
+          new_item[keys[i]] = curr_text;
+          archivo[archivo.indexOf(item)] = new_item;
+          // Modificar celda
+          td.innerText = curr_text;
+          item = new_item;
+          td.style.cssText = 'padding: 5px';
+        } else { // No hay cambios
+          td.removeAttribute('data-clicked');
+          td.removeAttribute('data-text');
+          // Modificar celda
+          console.log(archivo);
+          td.innerText = orig_text;
+          td.style.cssText = 'padding: 5px';
+        }
+
+        // Color
+        if(isNaN(curr_text) && (headerTypes[i] === 'text')) { // Texto
+          td.style.color = 'seagreen';
+        } else if (!isNaN(curr_text) && (headerTypes[i] === 'number')){ // Número
+          td.style.color = 'royalblue';
+        } else { // Error
+          td.style.color = 'darkred';
+          td.style.backgroundColor = 'lightpink';
+        }
+      }
+
+      // Guardar cambios con tecla Enter
+      input.onkeypress = function(e) {
+        if (e.keyCode == 13) {
+          this.blur();
+        }
+      }
+
+      this.innerText = '';
+      this.style.cssText = 'padding: 0px 0px';
+      this.append(input);
+      this.firstElementChild.select();
+    }
+
     tr.appendChild(td);
   });
   table.appendChild(tr);
@@ -568,8 +657,8 @@ tt_g.append('path')
     let label = tt_data.find(x => x[selectorVs] === (i.value).toString())[tt_key] + ': ' + i.value;
     tt_hoverDiv.html(label)
       // Coordenadas
-      .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 50 + 'px')
-      .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 75 + 'px');
+      .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 150 + 'px')
+      .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 175 + 'px');
   })
   .on('mouseout', function (d, i) { // Ratón sale del sector
     // Volver sector a la normalidad
@@ -595,8 +684,6 @@ if( archivo[0].children === undefined ) {
   // Datos
   var tempArchivo = structuredClone(archivo);
   var sb_data = limitData(tempArchivo[0], limitSb);
-  console.log("sb_data: ");
-  console.log(sb_data);
 
   // Dimensiones
   const ng_width = 950,
