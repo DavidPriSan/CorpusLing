@@ -207,14 +207,25 @@ const archivo = arch;
 ```js
 muestraTSV.innerHTML = JSON.stringify(archivo);
 const keys = Object.keys(archivo[0]);
+console.log(keys);
 ```
 
 <!-- Verificación -->
 
 <div id="paso2">
 <div class="grid grid-cols-3">
-  <div class="card"> <!-- Texto -->
+  <div class="card" style="max-height: 100px;"> <!-- Título -->
     <h1>Comprueba que tus datos se ven bien</h1>
+  </div>
+  <div class="card" style="max-height: 100px;"> <!-- Botones -->
+    ${selectorVfInput}
+  </div>
+  <div class="card" style="max-height: 100px;">
+    ${selectorADInput}
+  </div>
+</div>
+<div class="grid grid-cols-3">
+  <div id="textoVf" class="card" style="max-height: 400px;"> <!-- Texto -->
     <p>
       Comprueba que tus datos se han procesado correctamente. En la tabla de la derecha puedes ver los 
       <span style="color: royalblue">números</span> 
@@ -224,10 +235,18 @@ const keys = Object.keys(archivo[0]);
       <span style="color: darkred; background-color: lightpink">celda</span> 
       de color rojo indica que hay un dato que no se corresponde con la columna o que hay un problema con el conjunto de datos.
     </p>
+    <p>
+      Puedes editar el contenido de las celdas haciendo click en cada una de ellas, realiza todos los cambios que consideres antes de avanzar a la parte de visualización.
+    </p>
+  </div>
+  <div id="editColVf" class="card" style="max-height: 400px;" hidden> <!-- Editar columna -->
+    <h2>Editar columna</h2>
+    <br>
+    ${selectorColInput}
+    <br>
+    ${nombreColInput}
   </div>
   <div class="card grid-colspan-2" style="max-height: 400px;"> <!-- Tabla -->
-    ${selectorVfInput}
-    ${selectorADInput}
     <div id="tablaVf" class="scrollable-div"></div>
   </div>
 </div>
@@ -238,6 +257,8 @@ const keys = Object.keys(archivo[0]);
 ```js
 // Tabla verificación
 const container = document.getElementById('tablaVf');
+const textoVf = document.getElementById('textoVf');
+const editColVf = document.getElementById('editColVf');
 
 // Borra tabla anterior (si existe)
 let tablaAnt = document.getElementById('tablaVer');
@@ -263,6 +284,92 @@ keys.forEach((item, i) => {
     headerTypes[i] = 'number';
     th.style.color = 'royalblue';
   }
+
+  // Editar columna
+  th.onclick = function() {
+    // Checkea si ya está clickada
+    if (this.hasAttribute('data-clicked')) {
+      return;
+    }
+
+    this.setAttribute('data-clicked', 'yes');
+    this.setAttribute('data-text', this.innerText);
+    textoVf.hidden = true;
+    editColVf.hidden = false;
+    selectorColInput.value = headerTypes[i];
+    nombreColInput.placeholder = this.innerText;
+    nombreColInput.value = this.innerText;
+    console.log(nombreColInput.value);
+
+    // Input
+    var input = document.createElement('input');
+    input.setAttribute('type', 'button');
+    input.value = 'Confirmar';
+    input.style.width = '100px';
+    input.style.height = '50px';
+    input.style.border = '5px';
+    input.style.fontFamily = 'inherit';
+    input.style.fontSize = 'inherit';
+    input.style.textAlign = 'inherit';
+
+    input.onclick = function() {
+      var orig_text = th.getAttribute('data-text');
+      var curr_text = nombreColInput.value;
+
+      if (orig_text != curr_text) { // Hay cambios
+        console.log(archivo);
+        console.log(keys);
+        console.log(headerTypes);
+        console.log(nombreColInput.value);
+        th.removeAttribute('data-clicked');
+        th.removeAttribute('data-text');
+
+        // Modificar key
+        var new_item = structuredClone(item);
+        new_item = curr_text;
+        keys[keys.indexOf(item)] = new_item;
+        headerTypes[i] = selectorColInput.value;
+
+        // Modificar key en cada objeto
+        archivo.forEach( (obj) => {
+          delete Object.assign(obj, {[curr_text]: obj[orig_text] })[orig_text];
+        });
+        console.log(archivo);
+        console.log(keys);
+        console.log(headerTypes);
+
+        // Modificar celda
+        th.innerText = curr_text;
+        item = new_item;
+        th.style.cssText = 'padding: 5px';
+      } else { // No hay cambios
+        th.removeAttribute('data-clicked');
+        th.removeAttribute('data-text');
+
+        // Modificar key
+        headerTypes[i] = selectorColInput.value;
+
+        // Modificar celda
+        th.innerText = orig_text;
+        th.style.cssText = 'padding: 5px';
+      }
+
+      // Color
+      if(headerTypes[i] == 'text') { // Texto
+        th.style.color = 'seagreen';
+      } else if(headerTypes[i] == 'number') { // Número
+        th.style.color = 'royalblue';
+      }
+
+      textoVf.hidden = false;
+      editColVf.hidden = true;
+      editColVf.removeChild(input);
+    }
+
+    editColVf.append(input);
+    editColVf.lastElementChild.select();
+  }
+
   tr.appendChild(th);
 });
 thead.appendChild(tr);
@@ -320,17 +427,18 @@ archivo.forEach((item) => {
       input.style.backgroundColor = 'LightGoldenRodYellow';
 
       input.onblur = function() {
-        var td_parent = input.parentElement;
         var orig_text = td.getAttribute('data-text');
         var curr_text = this.value;
 
         if (orig_text != curr_text) { // Hay cambios
           td.removeAttribute('data-clicked');
           td.removeAttribute('data-text');
+
           // Modificar objeto
           var new_item = structuredClone(item);
           new_item[keys[i]] = curr_text;
           archivo[archivo.indexOf(item)] = new_item;
+
           // Modificar celda
           td.innerText = curr_text;
           item = new_item;
@@ -338,8 +446,8 @@ archivo.forEach((item) => {
         } else { // No hay cambios
           td.removeAttribute('data-clicked');
           td.removeAttribute('data-text');
+
           // Modificar celda
-          console.log(archivo);
           td.innerText = orig_text;
           td.style.cssText = 'padding: 5px';
         }
@@ -381,9 +489,20 @@ container.appendChild(table);
 // Selector columna
 const selectorVfInput = Inputs.select(keys, {label: "Ordenar por"});
 const selectorVf = Generators.input(selectorVfInput);
+
 // Selector asc/desc
 const selectorADInput = Inputs.select(["Ascendente", "Descendente"]);
 const selectorAD = Generators.input(selectorADInput);
+
+// Selector tipo columna
+const selectorColInput = Inputs.select(["number", "text"], {label: "Tipo"});
+const selectorCol = Generators.input(selectorColInput);
+
+// Input columna
+const nombreColInput = Inputs.text({
+  label: "Nombre"
+});
+const nombreCol = Generators.input(nombreColInput);
 ```
 
 <!-- Visualización -->
@@ -816,12 +935,9 @@ if( archivo[0].children === undefined ) {
   // Limitar hijos
   function limitData(d, i) {
     if (d.hasOwnProperty('children')) {
-      console.log("d length before: " + d.children.length);
       if(d.children.length > i) {
-        console.log("entra");
         d.children = d.children.slice(0, i);
       }
-      console.log("d length after: " + d.children.length);
       d.children.forEach((e) => limitData(e, i));
       return d;
     }
