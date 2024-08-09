@@ -207,7 +207,6 @@ const archivo = arch;
 ```js
 muestraTSV.innerHTML = JSON.stringify(archivo);
 const keys = Object.keys(archivo[0]);
-console.log(keys);
 ```
 
 <!-- Verificación -->
@@ -286,7 +285,7 @@ keys.forEach((item, i) => {
   }
 
   // Editar columna
-  th.onclick = function() {
+  /*th.onclick = function() {
     // Checkea si ya está clickada
     if (this.hasAttribute('data-clicked')) {
       return;
@@ -299,7 +298,6 @@ keys.forEach((item, i) => {
     selectorColInput.value = headerTypes[i];
     nombreColInput.placeholder = this.innerText;
     nombreColInput.value = this.innerText;
-    console.log(nombreColInput.value);
 
     // Input
     var input = document.createElement('input');
@@ -317,10 +315,6 @@ keys.forEach((item, i) => {
       var curr_text = nombreColInput.value;
 
       if (orig_text != curr_text) { // Hay cambios
-        console.log(archivo);
-        console.log(keys);
-        console.log(headerTypes);
-        console.log(nombreColInput.value);
         th.removeAttribute('data-clicked');
         th.removeAttribute('data-text');
 
@@ -334,9 +328,6 @@ keys.forEach((item, i) => {
         archivo.forEach( (obj) => {
           delete Object.assign(obj, {[curr_text]: obj[orig_text] })[orig_text];
         });
-        console.log(archivo);
-        console.log(keys);
-        console.log(headerTypes);
 
         // Modificar celda
         th.innerText = curr_text;
@@ -368,7 +359,7 @@ keys.forEach((item, i) => {
 
     editColVf.append(input);
     editColVf.lastElementChild.select();
-  }
+  }*/
 
   tr.appendChild(th);
 });
