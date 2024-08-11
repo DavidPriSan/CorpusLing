@@ -180,6 +180,18 @@ const keys = Object.keys(archivo[0]);
 return {keys};
 }});
 
+define({id: "a084e6f6", inputs: ["keys","archivo"], outputs: ["keysTypes"], body: (keys,archivo) => {
+const keysTypes = [];
+keys.forEach((item, i) => {
+  if(isNaN(archivo[0][item])) { // Texto
+    keysTypes[i] = 'text';
+  } else { // Número
+    keysTypes[i] = 'number';
+  }
+});
+return {keysTypes};
+}});
+
 define({id: "84f1f889", inline: true, inputs: ["selectorVfInput","display"], body: async (selectorVfInput,display) => {
 display(await(
 selectorVfInput
@@ -192,9 +204,23 @@ selectorADInput
 ))
 }});
 
-define({id: "226bb091", inputs: ["keys","archivo","selectorVf","selectorAD"], outputs: ["container","tablaAnt","table","thead","tr","headerTypes"], body: (keys,archivo,selectorVf,selectorAD) => {
-// Tabla verificación TSV
+define({id: "bbefc0f9", inline: true, inputs: ["selectorColInput","display"], body: async (selectorColInput,display) => {
+display(await(
+selectorColInput
+))
+}});
+
+define({id: "9e8ae319", inline: true, inputs: ["nombreColInput","display"], body: async (nombreColInput,display) => {
+display(await(
+nombreColInput
+))
+}});
+
+define({id: "0352ef6d", inputs: ["keys","keysTypes","selectorVf","selectorAD","archivo","structuredClone"], outputs: ["container","textoVf","editColVf","tablaAnt","table","thead","tr"], body: (keys,keysTypes,selectorVf,selectorAD,archivo,structuredClone) => {
+// Tabla verificación
 const container = document.getElementById('tablaVf');
+const textoVf = document.getElementById('textoVf');
+const editColVf = document.getElementById('editColVf');
 
 // Borra tabla anterior (si existe)
 let tablaAnt = document.getElementById('tablaVer');
@@ -206,33 +232,109 @@ let table = document.createElement('table');
 table.setAttribute('id', 'tablaVer');
 let thead = document.createElement('thead');
 let tr = document.createElement('tr');
-var headerTypes = [];
 
 // Encabezados
 keys.forEach((item, i) => {
   let th = document.createElement('th');
   th.innerText = item;
+
   // Color
-  if(isNaN(archivo[0][item])) { //Texto
-    headerTypes[i] = 'text';
+  if(keysTypes[i] == 'text') {
     th.style.color = 'seagreen';
-  } else { // Número
-    headerTypes[i] = 'number';
+  } else if(keysTypes[i] == 'number') {
     th.style.color = 'royalblue';
   }
+
+  // Editar columna
+  /*th.onclick = function() {
+    // Checkea si ya está clickada
+    if (this.hasAttribute('data-clicked')) {
+      return;
+    }
+    
+    this.setAttribute('data-clicked', 'yes');
+    this.setAttribute('data-text', this.innerText);
+    textoVf.hidden = true;
+    editColVf.hidden = false;
+    selectorColInput.value = keysTypes[i];
+    nombreColInput.placeholder = this.innerText;
+    nombreColInput.value = this.innerText;
+
+    // Input
+    var input = document.createElement('input');
+    input.setAttribute('type', 'button');
+    input.value = 'Confirmar';
+    input.style.width = '100px';
+    input.style.height = '50px';
+    input.style.border = '5px';
+    input.style.fontFamily = 'inherit';
+    input.style.fontSize = 'inherit';
+    input.style.textAlign = 'inherit';
+
+    input.onclick = function() {
+      var orig_text = th.getAttribute('data-text');
+      var curr_text = nombreColInput.value;
+
+      if (orig_text != curr_text) { // Hay cambios
+        th.removeAttribute('data-clicked');
+        th.removeAttribute('data-text');
+
+        // Modificar key
+        var new_item = structuredClone(item);
+        new_item = curr_text;
+        //keys[keys.indexOf(item)] = new_item;
+        keysTypes[i] = selectorColInput.value;
+
+        // Modificar key en cada objeto
+        archivo.forEach( (obj) => {
+          delete Object.assign(obj, {[curr_text]: obj[orig_text] })[orig_text];
+        });
+
+        // Modificar celda
+        th.innerText = curr_text;
+        item = new_item;
+        th.style.cssText = 'padding: 5px';
+      } else { // No hay cambios
+        th.removeAttribute('data-clicked');
+        th.removeAttribute('data-text');
+
+        // Modificar key
+        keysTypes[i] = selectorColInput.value;
+
+        // Modificar celda
+        th.innerText = orig_text;
+        th.style.cssText = 'padding: 5px';
+      }
+
+      // Color
+      if(keysTypes[i] == 'text') { // Texto
+        th.style.color = 'seagreen';
+      } else if(keysTypes[i] == 'number') { // Número
+        th.style.color = 'royalblue';
+      }
+
+      textoVf.hidden = false;
+      editColVf.hidden = true;
+      editColVf.removeChild(input);
+    }
+
+    editColVf.append(input);
+    editColVf.lastElementChild.select();
+  }*/
+
   tr.appendChild(th);
 });
 thead.appendChild(tr);
 table.append(tr);
 
 // Ordenar conjunto
-if ((headerTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Ascendente')) {
+if ((keysTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Ascendente')) {
   archivo.sort((a,b) => (a[selectorVf] > b[selectorVf]) ? 1 : ((b[selectorVf] > a[selectorVf]) ? -1 : 0));
-} else if ((headerTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Descendente')) {
+} else if ((keysTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Descendente')) {
   archivo.sort((a,b) => (a[selectorVf] < b[selectorVf]) ? 1 : ((b[selectorVf] < a[selectorVf]) ? -1 : 0));
-} else if ((headerTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Ascendente')){
+} else if ((keysTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Ascendente')){
   archivo.sort((a,b) => a[selectorVf] - b[selectorVf]);
-} else if ((headerTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Descendente')){
+} else if ((keysTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Descendente')){
   archivo.sort((a,b) => b[selectorVf] - a[selectorVf]);
 }
 
@@ -245,35 +347,125 @@ archivo.forEach((item) => {
     let td = document.createElement('td');
     td.innerText = elem;
     // Color
-    if(isNaN(elem) && (headerTypes[i] === 'text')) { //Texto
+    if(isNaN(elem) && (keysTypes[i] === 'text')) { // Texto
       td.style.color = 'seagreen';
-    } else if (!isNaN(elem) && (headerTypes[i] === 'number')){ // Número
+    } else if (!isNaN(elem) && (keysTypes[i] === 'number')){ // Número
       td.style.color = 'royalblue';
-    } else {
+    } else { // Error
       td.style.color = 'darkred';
       td.style.backgroundColor = 'lightpink';
     }
+
+    // Celda editable
+    td.onclick = function() {
+      // Checkea si ya está clickada
+      if (this.hasAttribute('data-clicked')) {
+        return;
+      }
+
+      this.setAttribute('data-clicked', 'yes');
+      this.setAttribute('data-text', this.innerText);
+
+      // Input
+      var input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.value = this.innerText;
+      input.style.width = (this.offsetWidth - 5) + 'px';
+      input.style.height = (this.offsetHeight - 5) + 'px';
+      input.style.border = '0px';
+      input.style.fontFamily = 'inherit';
+      input.style.fontSize = 'inherit';
+      input.style.textAlign = 'inherit';
+      input.style.backgroundColor = 'LightGoldenRodYellow';
+
+      input.onblur = function() {
+        var orig_text = td.getAttribute('data-text');
+        var curr_text = this.value;
+
+        if (orig_text != curr_text) { // Hay cambios
+          td.removeAttribute('data-clicked');
+          td.removeAttribute('data-text');
+
+          // Modificar objeto
+          var new_item = structuredClone(item);
+          new_item[keys[i]] = curr_text;
+          archivo[archivo.indexOf(item)] = new_item;
+
+          // Modificar celda
+          td.innerText = curr_text;
+          item = new_item;
+          td.style.cssText = 'padding: 5px';
+        } else { // No hay cambios
+          td.removeAttribute('data-clicked');
+          td.removeAttribute('data-text');
+
+          // Modificar celda
+          td.innerText = orig_text;
+          td.style.cssText = 'padding: 5px';
+        }
+
+        // Color
+        if(isNaN(curr_text) && (keysTypes[i] === 'text')) { // Texto
+          td.style.color = 'seagreen';
+        } else if (!isNaN(curr_text) && (keysTypes[i] === 'number')){ // Número
+          td.style.color = 'royalblue';
+        } else { // Error
+          td.style.color = 'darkred';
+          td.style.backgroundColor = 'lightpink';
+        }
+      }
+
+      // Guardar cambios con tecla Enter
+      input.onkeypress = function(e) {
+        if (e.keyCode == 13) {
+          this.blur();
+        }
+      }
+
+      this.innerText = '';
+      this.style.cssText = 'padding: 0px 0px';
+      this.append(input);
+      this.firstElementChild.select();
+    }
+
     tr.appendChild(td);
   });
   table.appendChild(tr);
 });
 container.appendChild(table);
-return {container,tablaAnt,table,thead,tr,headerTypes};
+return {container,textoVf,editColVf,tablaAnt,table,thead,tr};
 }});
 
-define({id: "40538ca7", inputs: ["Inputs","keys","Generators"], outputs: ["selectorVfInput","selectorVf","selectorADInput","selectorAD"], body: (Inputs,keys,Generators) => {
+define({id: "e358c8f3", inputs: ["Inputs","keys","Generators"], outputs: ["selectorVfInput","selectorVf","selectorADInput","selectorAD","selectorColInput","selectorCol","nombreColInput","nombreCol"], body: (Inputs,keys,Generators) => {
 // Selector columna
 const selectorVfInput = Inputs.select(keys, {label: "Ordenar por"});
 const selectorVf = Generators.input(selectorVfInput);
+
 // Selector asc/desc
 const selectorADInput = Inputs.select(["Ascendente", "Descendente"]);
 const selectorAD = Generators.input(selectorADInput);
-return {selectorVfInput,selectorVf,selectorADInput,selectorAD};
+
+// Selector tipo columna
+const selectorColInput = Inputs.select(["number", "text"], {label: "Tipo"});
+const selectorCol = Generators.input(selectorColInput);
+
+// Input columna
+const nombreColInput = Inputs.text({
+  label: "Nombre"
+});
+const nombreCol = Generators.input(nombreColInput);
+return {selectorVfInput,selectorVf,selectorADInput,selectorAD,selectorColInput,selectorCol,nombreColInput,nombreCol};
 }});
 
 define({id: "84ae4f69", inline: true, inputs: ["graphInput","display"], body: async (graphInput,display) => {
 display(await(
 graphInput
+))
+}});
+
+define({id: "3a01cff3", inline: true, inputs: ["selectorIdInput","display"], body: async (selectorIdInput,display) => {
+display(await(
+selectorIdInput
 ))
 }});
 
@@ -349,9 +541,24 @@ if (graph == 0) { // Sin seleccionar gráfico
 return {graphBarrasDiv,graphSectorDiv,graphSunburstDiv,graphButtonsDiv,sunburstButtonsDiv};
 }});
 
-define({id: "e81a492e", inputs: ["Inputs","keys","Generators","archivo"], outputs: ["selectorVsInput","selectorVs","limitVsInput","limitVs","limitSbInput","limitSb"], body: (Inputs,keys,Generators,archivo) => {
+define({id: "8fddddab", inputs: ["keys","keysTypes","Inputs","Generators","archivo"], outputs: ["keysText","keysNumber","selectorIdInput","selectorId","selectorVsInput","selectorVs","limitVsInput","limitVs","limitSbInput","limitSb"], body: (keys,keysTypes,Inputs,Generators,archivo) => {
+const keysText = [];
+const keysNumber = [];
+
+keys.forEach((item, i) => {
+  if(keysTypes[i] == "text") {
+    keysText.push(item);
+  } else if(keysTypes[i] == "number") {
+    keysNumber.push(item);
+  }
+});
+
+// Selector de identificador
+const selectorIdInput = Inputs.select(keysText, {label: "Selecciona identificador"});
+const selectorId = Generators.input(selectorIdInput);
+
 // Selector de columna
-const selectorVsInput = Inputs.select(keys, {label: "Seleccionar columna"});
+const selectorVsInput = Inputs.select(keysNumber, {label: "Selecciona columna"});
 const selectorVs = Generators.input(selectorVsInput);
 
 // Limitador de datos
@@ -361,208 +568,250 @@ const limitVs = Generators.input(limitVsInput);
 // Limitador Sunburst
 const limitSbInput = Inputs.range([1, 50], {step: 1, label: "Límite de elementos"});
 const limitSb = Generators.input(limitSbInput);
-return {selectorVsInput,selectorVs,limitVsInput,limitVs,limitSbInput,limitSb};
+return {keysText,keysNumber,selectorIdInput,selectorId,selectorVsInput,selectorVs,limitVsInput,limitVs,limitSbInput,limitSb};
 }});
 
-define({id: "65cc87f8", inputs: ["archivo","limitVs","d3","selectorVs"], outputs: ["c_data","c_key","c_width","c_height","c_marginTop","c_marginRight","c_marginBottom","c_marginLeft","c_x","c_y","c_yAxis","barrasAnt","c_svg"], body: (archivo,limitVs,d3,selectorVs) => {
-// Datos
-const c_data = archivo.filter(function(d,i){
-  return i < limitVs;
-});
+define({id: "ca995c30", inputs: ["keysText","keysNumber","graphBarrasDiv","graphInput","archivo","limitVs","selectorId","structuredClone","d3","selectorVs"], body: (keysText,keysNumber,graphBarrasDiv,graphInput,archivo,limitVs,selectorId,structuredClone,d3,selectorVs) => {
+if(keysText.length === 0 || keysNumber.length === 0) {
+  graphBarrasDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
+  graphInput[0].disabled = true;
+} else {
+  graphBarrasDiv.innerHTML = "";
+  graphInput[0].disabled = false;
 
-// Elige la primera key que no es un número
-const c_key = Object.keys(c_data[0]).find(c_key => c_data[0][c_key] === Object.values(c_data[0]).find((e) => isNaN(e)));
-
-// Dimensiones
-const c_width = Math.max(200, [...new Set(c_data.map(item => item[c_key]))].length * 30),
-      c_height = 600,
-      c_marginTop = 20,
-      c_marginRight = 0,
-      c_marginBottom = 70,
-      c_marginLeft = 70;
-
-// Escala X
-const c_x = d3.scaleBand()
-  .domain(d3.groupSort(c_data, ([d]) => -d[c_key], (d) => d[c_key]))
-  .range([c_marginLeft, c_width - c_marginRight])
-  .padding(0.1);
-
-// Escala Y
-const c_y = d3.scaleLinear()
-  .domain([0, d3.max(c_data, function(d) { return +d[selectorVs]; })])
-  .range([c_height - c_marginBottom, c_marginTop]);
-
-const c_yAxis = d3.axisLeft(c_y)
-  .ticks(10)
-  .tickSize(0);
-
-// Borra gráfico anterior (si existe)
-let barrasAnt = document.getElementById('barras');
-if (barrasAnt != null) {
-  barrasAnt.remove();
-}
-
-// SVG
-const c_svg = d3.select('#graphBarras').append('svg')
-  .attr('id', 'barras')
-  .attr('width', c_width)
-  .attr('height', c_height)
-  .attr('viewbox', [0, 0, c_width, c_height]);
-
-// Malla
-c_svg.selectAll('line.horizontal-grid')
-  .data(c_y.ticks(10))
-  .enter()
-  .append('line')
-  .attr('class', 'horizontal-grid')
-  .attr('x1', c_marginLeft)
-  .attr('y1', (d) => { return c_y(d); })
-  .attr('x2', c_width)
-  .attr('y2', (d) => { return c_y(d); })
-  .style('stroke', 'gray')
-  .style('stroke-width', 0.5)
-  .style('stroke-dasharray', '3 3');
-
-// Barras
-c_svg.append('g')
-  .attr('fill', 'steelblue')
-  .selectAll()
-  .data(c_data)
-  .join('rect')
-    .attr('x', (d) => c_x(d[c_key]))
-    .attr('y', (d) => c_y(d[selectorVs]))
-    .attr('height', (d) => (c_height - c_marginBottom) - c_y(d[selectorVs]))
-    .attr('width', c_x.bandwidth());
-
-// Eje X
-c_svg.append('g')
-  .attr('transform', `translate(0,${c_height - c_marginBottom})`)
-  .call(d3.axisBottom(c_x).tickSizeOuter(0))
-  .selectAll('text')
-    .attr('transform', 'translate(-10,0)rotate(-45)')
-    .style('text-anchor', 'end');
-
-// Eje Y
-c_svg.append('g')
-  .attr('transform', `translate(${c_marginLeft},0)`)
-  .call(c_yAxis)
-  .call(g => g.select('.domain').remove())
-  .call(g => g.append('text')
-    .attr('x', -c_marginLeft)
-    .attr('y', 10)
-    .attr('fill', 'currentColor')
-    .attr('text-anchor', 'start')
-    .text('↑ ' + selectorVs));
-return {c_data,c_key,c_width,c_height,c_marginTop,c_marginRight,c_marginBottom,c_marginLeft,c_x,c_y,c_yAxis,barrasAnt,c_svg};
-}});
-
-define({id: "aa954478", inputs: ["archivo","limitVs","d3","selectorVs"], outputs: ["tt_margin","tt_width","tt_height","tt_radius","tt_data","tt_key","tt_color","tt_pie","tt_arc","tt_hoverArc","sectorAnt","tt_svg","tt_hoverDiv","tt_g"], body: (archivo,limitVs,d3,selectorVs) => {
-// Dimensiones
-const tt_margin = 20,
-    tt_width = 900,
-    tt_height = 900,
-    tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
-
-// Datos
-const tt_data = archivo.filter(function(d,i){
-  return i < limitVs;
-});
-
-// Key para identificar elementos (primera no numérica)
-const tt_key = Object.keys(tt_data[0]).find(tt_key => tt_data[0][tt_key] === Object.values(tt_data[0]).find((e) => isNaN(e)));
-
-// Paleta de colores
-const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_data.map(item => item[selectorVs]))].length + 1));
-
-// Layout del gráfico
-const tt_pie = d3.pie()
-  .sort(null)
-  .value(d => d[selectorVs]);
-
-// Generador de arcos
-const tt_arc = d3.arc()
-  .innerRadius(0)
-  .outerRadius(tt_radius * 0.8);
-
-// Arcos para el ratón
-const tt_hoverArc = d3.arc()
-  .innerRadius(0)
-  .outerRadius(tt_radius);
-
-// Borra gráfico anterior (si existe)
-let sectorAnt = document.getElementById('sector');
-if (sectorAnt != null) {
-  sectorAnt.remove();
-}
-
-// SVG
-const tt_svg = d3.select('#graphSector').append('svg')
-  .attr('id', 'sector')
-  .attr('width', tt_width)
-  .attr('height', tt_height)
-  .attr('style', 'font: 14px sans-serif;')
-  .attr('viewBox', [-tt_width / 2, -tt_height / 2, tt_width, tt_height]);
-
-// Tooltip
-var tt_hoverDiv = d3.select('#graphSector').append('div')
-  .attr('class', 'tooltip-donut')
-  .style('opacity', 0);
-
-// Sectores
-const tt_g = tt_svg.selectAll('.arc')
-  .data(tt_pie(tt_data))
-  .enter().append('g')
-  .attr('class', 'arc');
-
-tt_g.append('path')
-  .attr('d', tt_arc)
-  .attr('class', 'arc')
-  .style('fill', (d, i) => tt_color(i))
-  .style('fill-opacity', 0.8)
-  .style('stroke', 'black')
-  .style('stroke-width', 1)
-  .on('mouseover', function (d, i) { // Ratón encima del sector
-    // Resaltar sector
-    d3.select(this)
-      .style('fill-opacity', 1)
-      .transition().duration(500)
-      .attr('d', tt_hoverArc);
-    // Mostrar tooltip
-    tt_hoverDiv.transition()
-      .duration(50)
-      .style('opacity', 1);
-    // Texto
-    let label = tt_data.find(x => x[selectorVs] === (i.value).toString())[tt_key] + ': ' + i.value;
-    tt_hoverDiv.html(label)
-      // Coordenadas
-      .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 150 + 'px')
-      .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 175 + 'px');
-  })
-  .on('mouseout', function (d, i) { // Ratón sale del sector
-    // Volver sector a la normalidad
-    d3.select(this)
-      .style('fill-opacity', 0.8)
-      .transition().duration(500)
-      .attr('d', tt_arc);
-    // Ocultar tooltip
-    tt_hoverDiv.transition()
-      .duration(50)
-      .style('opacity', 0);
+  // Datos
+  const c_data = archivo.filter(function(d,i){
+    return i < limitVs;
   });
-return {tt_margin,tt_width,tt_height,tt_radius,tt_data,tt_key,tt_color,tt_pie,tt_arc,tt_hoverArc,sectorAnt,tt_svg,tt_hoverDiv,tt_g};
+
+  // Elige la primera key que no es un número
+  const c_key = selectorId;
+
+  // Agrupar por identificador
+  const c_grouped = [];
+  c_data.forEach((item) => {
+    var groupedO = c_grouped.find(o => { return o[c_key] == item[c_key]});
+    if (groupedO != undefined) {
+      keysNumber.forEach((key) => {
+        let num = Number(groupedO[key]) + Number(item[key])
+        groupedO[key] = num.toString();
+      });
+    } else {
+      c_grouped.push(structuredClone(item));
+    }
+  });
+
+  // Dimensiones
+  const c_width = Math.max(200, [...new Set(c_grouped.map(item => item[c_key]))].length * 30),
+        c_height = 600,
+        c_marginTop = 20,
+        c_marginRight = 0,
+        c_marginBottom = 70,
+        c_marginLeft = 70;
+
+  // Escala X
+  const c_x = d3.scaleBand()
+    .domain(d3.groupSort(c_grouped, ([d]) => -d[c_key], (d) => d[c_key]))
+    .range([c_marginLeft, c_width - c_marginRight])
+    .padding(0.1);
+
+  // Escala Y
+  const c_y = d3.scaleLinear()
+    .domain([0, d3.max(c_grouped, function(d) { return +d[selectorVs]; })])
+    .range([c_height - c_marginBottom, c_marginTop]);
+
+  const c_yAxis = d3.axisLeft(c_y)
+    .ticks(10)
+    .tickSize(0);
+
+  // Borra gráfico anterior (si existe)
+  let barrasAnt = document.getElementById('barras');
+  if (barrasAnt != null) {
+    barrasAnt.remove();
+  }
+
+  // SVG
+  const c_svg = d3.select('#graphBarras').append('svg')
+    .attr('id', 'barras')
+    .attr('width', c_width)
+    .attr('height', c_height)
+    .attr('viewbox', [0, 0, c_width, c_height]);
+
+  // Malla
+  c_svg.selectAll('line.horizontal-grid')
+    .data(c_y.ticks(10))
+    .enter()
+    .append('line')
+    .attr('class', 'horizontal-grid')
+    .attr('x1', c_marginLeft)
+    .attr('y1', (d) => { return c_y(d); })
+    .attr('x2', c_width)
+    .attr('y2', (d) => { return c_y(d); })
+    .style('stroke', 'gray')
+    .style('stroke-width', 0.5)
+    .style('stroke-dasharray', '3 3');
+
+  // Barras
+  c_svg.append('g')
+    .attr('fill', 'steelblue')
+    .selectAll()
+    .data(c_grouped)
+    .join('rect')
+      .attr('x', (d) => c_x(d[c_key]))
+      .attr('y', (d) => c_y(d[selectorVs]))
+      .attr('height', (d) => (c_height - c_marginBottom) - c_y(d[selectorVs]))
+      .attr('width', c_x.bandwidth());
+
+  // Eje X
+  c_svg.append('g')
+    .attr('transform', `translate(0,${c_height - c_marginBottom})`)
+    .call(d3.axisBottom(c_x).tickSizeOuter(0))
+    .selectAll('text')
+      .attr('transform', 'translate(-10,0)rotate(-45)')
+      .style('text-anchor', 'end');
+
+  // Eje Y
+  c_svg.append('g')
+    .attr('transform', `translate(${c_marginLeft},0)`)
+    .call(c_yAxis)
+    .call(g => g.select('.domain').remove())
+    .call(g => g.append('text')
+      .attr('x', -c_marginLeft)
+      .attr('y', 10)
+      .attr('fill', 'currentColor')
+      .attr('text-anchor', 'start')
+      .text('↑ ' + selectorVs));
+}
 }});
 
-define({id: "c9a7d1c8", inputs: ["archivo","graphSunburstDiv","structuredClone","limitSb","d3"], body: (archivo,graphSunburstDiv,structuredClone,limitSb,d3) => {
+define({id: "15308959", inputs: ["keysText","keysNumber","graphSectorDiv","graphInput","archivo","limitVs","selectorId","structuredClone","d3","selectorVs"], body: (keysText,keysNumber,graphSectorDiv,graphInput,archivo,limitVs,selectorId,structuredClone,d3,selectorVs) => {
+if(keysText.length === 0 || keysNumber.length === 0) {
+  graphSectorDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
+  graphInput[1].disabled = true;
+} else {
+  graphSectorDiv.innerHTML = "";
+  graphInput[1].disabled = false;
+
+  // Dimensiones
+  const tt_margin = 20,
+      tt_width = 900,
+      tt_height = 900,
+      tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
+
+  // Datos
+  const tt_data = archivo.filter(function(d,i){
+    return i < limitVs;
+  });
+
+  // Key para identificar elementos (primera no numérica)
+  const tt_key = selectorId;
+
+  // Agrupar por identificador
+  const tt_grouped = [];
+  tt_data.forEach((item) => {
+    var groupedO = tt_grouped.find(o => { return o[tt_key] == item[tt_key]});
+    if (groupedO != undefined) {
+      keysNumber.forEach((key) => {
+        let num = Number(groupedO[key]) + Number(item[key])
+        groupedO[key] = num.toString();
+      });
+    } else {
+      tt_grouped.push(structuredClone(item));
+    }
+  });
+
+  // Paleta de colores
+  const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_grouped.map(item => item[selectorVs]))].length + 1));
+
+  // Layout del gráfico
+  const tt_pie = d3.pie()
+    .sort(null)
+    .value(d => d[selectorVs]);
+
+  // Generador de arcos
+  const tt_arc = d3.arc()
+    .innerRadius(0)
+    .outerRadius(tt_radius * 0.8);
+
+  // Arcos para el ratón
+  const tt_hoverArc = d3.arc()
+    .innerRadius(0)
+    .outerRadius(tt_radius);
+
+  // Borra gráfico anterior (si existe)
+  let sectorAnt = document.getElementById('sector');
+  if (sectorAnt != null) {
+    sectorAnt.remove();
+  }
+
+  // SVG
+  const tt_svg = d3.select('#graphSector').append('svg')
+    .attr('id', 'sector')
+    .attr('width', tt_width)
+    .attr('height', tt_height)
+    .attr('style', 'font: 14px sans-serif;')
+    .attr('viewBox', [-tt_width / 2, -tt_height / 2, tt_width, tt_height]);
+
+  // Tooltip
+  var tt_hoverDiv = d3.select('#graphSector').append('div')
+    .attr('class', 'tooltip-donut')
+    .style('opacity', 0);
+
+  // Sectores
+  const tt_g = tt_svg.selectAll('.arc')
+    .data(tt_pie(tt_grouped))
+    .enter().append('g')
+    .attr('class', 'arc');
+
+  tt_g.append('path')
+    .attr('d', tt_arc)
+    .attr('class', 'arc')
+    .style('fill', (d, i) => tt_color(i))
+    .style('fill-opacity', 0.8)
+    .style('stroke', 'black')
+    .style('stroke-width', 1)
+    .on('mouseover', function (d, i) { // Ratón encima del sector
+      // Resaltar sector
+      d3.select(this)
+        .style('fill-opacity', 1)
+        .transition().duration(500)
+        .attr('d', tt_hoverArc);
+      // Mostrar tooltip
+      tt_hoverDiv.transition()
+        .duration(50)
+        .style('opacity', 1);
+      // Texto
+      let label = tt_grouped.find(x => x[selectorVs] === (i.value).toString())[tt_key] + ': ' + i.value;
+      tt_hoverDiv.html(label)
+        // Coordenadas
+        .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 150 + 'px')
+        .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 175 + 'px');
+    })
+    .on('mouseout', function (d, i) { // Ratón sale del sector
+      // Volver sector a la normalidad
+      d3.select(this)
+        .style('fill-opacity', 0.8)
+        .transition().duration(500)
+        .attr('d', tt_arc);
+      // Ocultar tooltip
+      tt_hoverDiv.transition()
+        .duration(50)
+        .style('opacity', 0);
+    });
+}
+}});
+
+define({id: "c495d342", inputs: ["archivo","graphSunburstDiv","graphInput","structuredClone","limitSb","d3"], body: (archivo,graphSunburstDiv,graphInput,structuredClone,limitSb,d3) => {
 if( archivo[0].children === undefined ) {
-  graphSunburstDiv.innerHTML = "<p>Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</p>";
+  graphSunburstDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
+  graphInput[2].disabled = true;
 } else{
+  graphInput[2].disabled = false;
   graphSunburstDiv.innerHTML = "";
 
   // Datos
   var tempArchivo = structuredClone(archivo);
   var sb_data = limitData(tempArchivo[0], limitSb);
-  console.log("sb_data: ");
-  console.log(sb_data);
 
   // Dimensiones
   const ng_width = 950,
@@ -695,12 +944,9 @@ if( archivo[0].children === undefined ) {
   // Limitar hijos
   function limitData(d, i) {
     if (d.hasOwnProperty('children')) {
-      console.log("d length before: " + d.children.length);
       if(d.children.length > i) {
-        console.log("entra");
         d.children = d.children.slice(0, i);
       }
-      console.log("d length after: " + d.children.length);
       d.children.forEach((e) => limitData(e, i));
       return d;
     }
@@ -769,6 +1015,21 @@ div.tooltip-donut {
   font-size: 1.3rem;
 }
 
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 5px;
+}
+
+table {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+th {
+  background-color: gainsboro;
+}
+
 </style>
 <div class="hero">
   <h1>CorpusLing</h1>
@@ -806,11 +1067,22 @@ div.tooltip-donut {
 <div id="cell-14165f7b" class="observablehq observablehq--block"></div>
 <div id="cell-7af89e89" class="observablehq observablehq--block"></div>
 <div id="cell-31b3dab5" class="observablehq observablehq--block"></div>
+<div id="cell-a084e6f6" class="observablehq observablehq--block"></div>
 <!-- Verificación -->
 <div id="paso2">
 <div class="grid grid-cols-3">
-  <div class="card"> <!-- Texto -->
+  <div class="card" style="max-height: 100px;"> <!-- Título -->
     <h1>Comprueba que tus datos se ven bien</h1>
+  </div>
+  <div class="card" style="max-height: 100px;"> <!-- Botones -->
+    <span id="cell-84f1f889"><span class="observablehq-loading"></span></span>
+  </div>
+  <div class="card" style="max-height: 100px;">
+    <span id="cell-4a179013"><span class="observablehq-loading"></span></span>
+  </div>
+</div>
+<div class="grid grid-cols-3">
+  <div id="textoVf" class="card" style="max-height: 400px;"> <!-- Texto -->
     <p>
       Comprueba que tus datos se han procesado correctamente. En la tabla de la derecha puedes ver los 
       <span style="color: royalblue">números</span> 
@@ -820,17 +1092,26 @@ div.tooltip-donut {
       <span style="color: darkred; background-color: lightpink">celda</span> 
       de color rojo indica que hay un dato que no se corresponde con la columna o que hay un problema con el conjunto de datos.
     </p>
+    <p>
+      Puedes editar el contenido de las celdas haciendo click en cada una de ellas, realiza todos los cambios que consideres antes de avanzar a la parte de visualización.
+    </p>
+  </div>
+  <div id="editColVf" class="card" style="max-height: 400px;" hidden=""> <!-- Editar columna -->
+    <h2>Editar columna</h2>
+    <br>
+    <span id="cell-bbefc0f9"><span class="observablehq-loading"></span></span>
+    <br>
+    <span id="cell-9e8ae319"><span class="observablehq-loading"></span></span>
   </div>
   <div class="card grid-colspan-2" style="max-height: 400px;"> <!-- Tabla -->
-    <span id="cell-84f1f889"><span class="observablehq-loading"></span></span>
-    <span id="cell-4a179013"><span class="observablehq-loading"></span></span>
     <div id="tablaVf" class="scrollable-div"></div>
   </div>
 </div>
 </div>
-<div id="cell-226bb091" class="observablehq observablehq--block"></div>
+<!-- Tabla -->
+<div id="cell-0352ef6d" class="observablehq observablehq--block"></div>
 <!-- Botones verificación -->
-<div id="cell-40538ca7" class="observablehq observablehq--block"></div>
+<div id="cell-e358c8f3" class="observablehq observablehq--block"></div>
 <!-- Visualización -->
 <div id="paso3">
   <div class="grid grid-cols-3">
@@ -841,6 +1122,7 @@ div.tooltip-donut {
     </div>
     <div class="card grid-colspan-2" style="max-height: 1200px;"> <!-- Gráfico -->
       <div id="graphButtons">
+        <span id="cell-3a01cff3"><span class="observablehq-loading"></span></span>
         <span id="cell-742f3895"><span class="observablehq-loading"></span></span>
         <span id="cell-a5c43da8"><span class="observablehq-loading"></span></span>
       </div>
@@ -861,15 +1143,16 @@ div.tooltip-donut {
 <div id="cell-331e4bcc" class="observablehq observablehq--block"></div>
 <!-- Elección gráfico -->
 <div id="cell-b43675ff" class="observablehq observablehq--block"></div>
-<div id="cell-e81a492e" class="observablehq observablehq--block"></div>
+<!-- Botones -->
+<div id="cell-8fddddab" class="observablehq observablehq--block"></div>
 <!-- Gráfico de barras -->
-<div id="cell-65cc87f8" class="observablehq observablehq--block"></div>
+<div id="cell-ca995c30" class="observablehq observablehq--block"></div>
 <!-- Diagrama de sectores -->
-<div id="cell-aa954478" class="observablehq observablehq--block"></div>
+<div id="cell-15308959" class="observablehq observablehq--block"></div>
 <!-- Zoomable sunburst -->
-<div id="cell-c9a7d1c8" class="observablehq observablehq--block"></div>
+<div id="cell-c495d342" class="observablehq observablehq--block"></div>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-07-29T14:32:59">Jul 29, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-11T12:53:35">Aug 11, 2024</a>.</div>
 </footer>
 </div>
