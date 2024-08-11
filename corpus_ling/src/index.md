@@ -623,227 +623,245 @@ const limitSb = Generators.input(limitSbInput);
 <!-- Gráfico de barras -->
 
 ```js
-// Datos
-const c_data = archivo.filter(function(d,i){
-  return i < limitVs;
-});
+if(keysText.length === 0 || keysNumber.length === 0) {
+  graphBarrasDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
+  graphInput[0].disabled = true;
+} else {
+  graphBarrasDiv.innerHTML = "";
+  graphInput[0].disabled = false;
 
-// Elige la primera key que no es un número
-const c_key = selectorId;
+  // Datos
+  const c_data = archivo.filter(function(d,i){
+    return i < limitVs;
+  });
 
-// Agrupar por identificador
-const c_grouped = [];
-c_data.forEach((item) => {
-  var groupedO = c_grouped.find(o => { return o[c_key] == item[c_key]});
-  if (groupedO != undefined) {
-    keysNumber.forEach((key) => {
-      let num = Number(groupedO[key]) + Number(item[key])
-      groupedO[key] = num.toString();
-    });
-  } else {
-    c_grouped.push(structuredClone(item));
+  // Elige la primera key que no es un número
+  const c_key = selectorId;
+
+  // Agrupar por identificador
+  const c_grouped = [];
+  c_data.forEach((item) => {
+    var groupedO = c_grouped.find(o => { return o[c_key] == item[c_key]});
+    if (groupedO != undefined) {
+      keysNumber.forEach((key) => {
+        let num = Number(groupedO[key]) + Number(item[key])
+        groupedO[key] = num.toString();
+      });
+    } else {
+      c_grouped.push(structuredClone(item));
+    }
+  });
+
+  // Dimensiones
+  const c_width = Math.max(200, [...new Set(c_grouped.map(item => item[c_key]))].length * 30),
+        c_height = 600,
+        c_marginTop = 20,
+        c_marginRight = 0,
+        c_marginBottom = 70,
+        c_marginLeft = 70;
+
+  // Escala X
+  const c_x = d3.scaleBand()
+    .domain(d3.groupSort(c_grouped, ([d]) => -d[c_key], (d) => d[c_key]))
+    .range([c_marginLeft, c_width - c_marginRight])
+    .padding(0.1);
+
+  // Escala Y
+  const c_y = d3.scaleLinear()
+    .domain([0, d3.max(c_grouped, function(d) { return +d[selectorVs]; })])
+    .range([c_height - c_marginBottom, c_marginTop]);
+
+  const c_yAxis = d3.axisLeft(c_y)
+    .ticks(10)
+    .tickSize(0);
+
+  // Borra gráfico anterior (si existe)
+  let barrasAnt = document.getElementById('barras');
+  if (barrasAnt != null) {
+    barrasAnt.remove();
   }
-});
 
-// Dimensiones
-const c_width = Math.max(200, [...new Set(c_grouped.map(item => item[c_key]))].length * 30),
-      c_height = 600,
-      c_marginTop = 20,
-      c_marginRight = 0,
-      c_marginBottom = 70,
-      c_marginLeft = 70;
+  // SVG
+  const c_svg = d3.select('#graphBarras').append('svg')
+    .attr('id', 'barras')
+    .attr('width', c_width)
+    .attr('height', c_height)
+    .attr('viewbox', [0, 0, c_width, c_height]);
 
-// Escala X
-const c_x = d3.scaleBand()
-  .domain(d3.groupSort(c_grouped, ([d]) => -d[c_key], (d) => d[c_key]))
-  .range([c_marginLeft, c_width - c_marginRight])
-  .padding(0.1);
+  // Malla
+  c_svg.selectAll('line.horizontal-grid')
+    .data(c_y.ticks(10))
+    .enter()
+    .append('line')
+    .attr('class', 'horizontal-grid')
+    .attr('x1', c_marginLeft)
+    .attr('y1', (d) => { return c_y(d); })
+    .attr('x2', c_width)
+    .attr('y2', (d) => { return c_y(d); })
+    .style('stroke', 'gray')
+    .style('stroke-width', 0.5)
+    .style('stroke-dasharray', '3 3');
 
-// Escala Y
-const c_y = d3.scaleLinear()
-  .domain([0, d3.max(c_grouped, function(d) { return +d[selectorVs]; })])
-  .range([c_height - c_marginBottom, c_marginTop]);
+  // Barras
+  c_svg.append('g')
+    .attr('fill', 'steelblue')
+    .selectAll()
+    .data(c_grouped)
+    .join('rect')
+      .attr('x', (d) => c_x(d[c_key]))
+      .attr('y', (d) => c_y(d[selectorVs]))
+      .attr('height', (d) => (c_height - c_marginBottom) - c_y(d[selectorVs]))
+      .attr('width', c_x.bandwidth());
 
-const c_yAxis = d3.axisLeft(c_y)
-  .ticks(10)
-  .tickSize(0);
+  // Eje X
+  c_svg.append('g')
+    .attr('transform', `translate(0,${c_height - c_marginBottom})`)
+    .call(d3.axisBottom(c_x).tickSizeOuter(0))
+    .selectAll('text')
+      .attr('transform', 'translate(-10,0)rotate(-45)')
+      .style('text-anchor', 'end');
 
-// Borra gráfico anterior (si existe)
-let barrasAnt = document.getElementById('barras');
-if (barrasAnt != null) {
-  barrasAnt.remove();
+  // Eje Y
+  c_svg.append('g')
+    .attr('transform', `translate(${c_marginLeft},0)`)
+    .call(c_yAxis)
+    .call(g => g.select('.domain').remove())
+    .call(g => g.append('text')
+      .attr('x', -c_marginLeft)
+      .attr('y', 10)
+      .attr('fill', 'currentColor')
+      .attr('text-anchor', 'start')
+      .text('↑ ' + selectorVs));
 }
-
-// SVG
-const c_svg = d3.select('#graphBarras').append('svg')
-  .attr('id', 'barras')
-  .attr('width', c_width)
-  .attr('height', c_height)
-  .attr('viewbox', [0, 0, c_width, c_height]);
-
-// Malla
-c_svg.selectAll('line.horizontal-grid')
-  .data(c_y.ticks(10))
-  .enter()
-  .append('line')
-  .attr('class', 'horizontal-grid')
-  .attr('x1', c_marginLeft)
-  .attr('y1', (d) => { return c_y(d); })
-  .attr('x2', c_width)
-  .attr('y2', (d) => { return c_y(d); })
-  .style('stroke', 'gray')
-  .style('stroke-width', 0.5)
-  .style('stroke-dasharray', '3 3');
-
-// Barras
-c_svg.append('g')
-  .attr('fill', 'steelblue')
-  .selectAll()
-  .data(c_grouped)
-  .join('rect')
-    .attr('x', (d) => c_x(d[c_key]))
-    .attr('y', (d) => c_y(d[selectorVs]))
-    .attr('height', (d) => (c_height - c_marginBottom) - c_y(d[selectorVs]))
-    .attr('width', c_x.bandwidth());
-
-// Eje X
-c_svg.append('g')
-  .attr('transform', `translate(0,${c_height - c_marginBottom})`)
-  .call(d3.axisBottom(c_x).tickSizeOuter(0))
-  .selectAll('text')
-    .attr('transform', 'translate(-10,0)rotate(-45)')
-    .style('text-anchor', 'end');
-
-// Eje Y
-c_svg.append('g')
-  .attr('transform', `translate(${c_marginLeft},0)`)
-  .call(c_yAxis)
-  .call(g => g.select('.domain').remove())
-  .call(g => g.append('text')
-    .attr('x', -c_marginLeft)
-    .attr('y', 10)
-    .attr('fill', 'currentColor')
-    .attr('text-anchor', 'start')
-    .text('↑ ' + selectorVs));
 ```
 
 <!-- Diagrama de sectores -->
 
 ```js
-// Dimensiones
-const tt_margin = 20,
-    tt_width = 900,
-    tt_height = 900,
-    tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
+if(keysText.length === 0 || keysNumber.length === 0) {
+  graphSectorDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
+  graphInput[1].disabled = true;
+} else {
+  graphSectorDiv.innerHTML = "";
+  graphInput[1].disabled = false;
 
-// Datos
-const tt_data = archivo.filter(function(d,i){
-  return i < limitVs;
-});
+  // Dimensiones
+  const tt_margin = 20,
+      tt_width = 900,
+      tt_height = 900,
+      tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
 
-// Key para identificar elementos (primera no numérica)
-const tt_key = selectorId;
-
-// Agrupar por identificador
-const tt_grouped = [];
-tt_data.forEach((item) => {
-  var groupedO = tt_grouped.find(o => { return o[c_key] == item[c_key]});
-  if (groupedO != undefined) {
-    keysNumber.forEach((key) => {
-      let num = Number(groupedO[key]) + Number(item[key])
-      groupedO[key] = num.toString();
-    });
-  } else {
-    tt_grouped.push(structuredClone(item));
-  }
-});
-
-// Paleta de colores
-const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_grouped.map(item => item[selectorVs]))].length + 1));
-
-// Layout del gráfico
-const tt_pie = d3.pie()
-  .sort(null)
-  .value(d => d[selectorVs]);
-
-// Generador de arcos
-const tt_arc = d3.arc()
-  .innerRadius(0)
-  .outerRadius(tt_radius * 0.8);
-
-// Arcos para el ratón
-const tt_hoverArc = d3.arc()
-  .innerRadius(0)
-  .outerRadius(tt_radius);
-
-// Borra gráfico anterior (si existe)
-let sectorAnt = document.getElementById('sector');
-if (sectorAnt != null) {
-  sectorAnt.remove();
-}
-
-// SVG
-const tt_svg = d3.select('#graphSector').append('svg')
-  .attr('id', 'sector')
-  .attr('width', tt_width)
-  .attr('height', tt_height)
-  .attr('style', 'font: 14px sans-serif;')
-  .attr('viewBox', [-tt_width / 2, -tt_height / 2, tt_width, tt_height]);
-
-// Tooltip
-var tt_hoverDiv = d3.select('#graphSector').append('div')
-  .attr('class', 'tooltip-donut')
-  .style('opacity', 0);
-
-// Sectores
-const tt_g = tt_svg.selectAll('.arc')
-  .data(tt_pie(tt_grouped))
-  .enter().append('g')
-  .attr('class', 'arc');
-
-tt_g.append('path')
-  .attr('d', tt_arc)
-  .attr('class', 'arc')
-  .style('fill', (d, i) => tt_color(i))
-  .style('fill-opacity', 0.8)
-  .style('stroke', 'black')
-  .style('stroke-width', 1)
-  .on('mouseover', function (d, i) { // Ratón encima del sector
-    // Resaltar sector
-    d3.select(this)
-      .style('fill-opacity', 1)
-      .transition().duration(500)
-      .attr('d', tt_hoverArc);
-    // Mostrar tooltip
-    tt_hoverDiv.transition()
-      .duration(50)
-      .style('opacity', 1);
-    // Texto
-    let label = tt_grouped.find(x => x[selectorVs] === (i.value).toString())[tt_key] + ': ' + i.value;
-    tt_hoverDiv.html(label)
-      // Coordenadas
-      .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 150 + 'px')
-      .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 175 + 'px');
-  })
-  .on('mouseout', function (d, i) { // Ratón sale del sector
-    // Volver sector a la normalidad
-    d3.select(this)
-      .style('fill-opacity', 0.8)
-      .transition().duration(500)
-      .attr('d', tt_arc);
-    // Ocultar tooltip
-    tt_hoverDiv.transition()
-      .duration(50)
-      .style('opacity', 0);
+  // Datos
+  const tt_data = archivo.filter(function(d,i){
+    return i < limitVs;
   });
+
+  // Key para identificar elementos (primera no numérica)
+  const tt_key = selectorId;
+
+  // Agrupar por identificador
+  const tt_grouped = [];
+  tt_data.forEach((item) => {
+    var groupedO = tt_grouped.find(o => { return o[tt_key] == item[tt_key]});
+    if (groupedO != undefined) {
+      keysNumber.forEach((key) => {
+        let num = Number(groupedO[key]) + Number(item[key])
+        groupedO[key] = num.toString();
+      });
+    } else {
+      tt_grouped.push(structuredClone(item));
+    }
+  });
+
+  // Paleta de colores
+  const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_grouped.map(item => item[selectorVs]))].length + 1));
+
+  // Layout del gráfico
+  const tt_pie = d3.pie()
+    .sort(null)
+    .value(d => d[selectorVs]);
+
+  // Generador de arcos
+  const tt_arc = d3.arc()
+    .innerRadius(0)
+    .outerRadius(tt_radius * 0.8);
+
+  // Arcos para el ratón
+  const tt_hoverArc = d3.arc()
+    .innerRadius(0)
+    .outerRadius(tt_radius);
+
+  // Borra gráfico anterior (si existe)
+  let sectorAnt = document.getElementById('sector');
+  if (sectorAnt != null) {
+    sectorAnt.remove();
+  }
+
+  // SVG
+  const tt_svg = d3.select('#graphSector').append('svg')
+    .attr('id', 'sector')
+    .attr('width', tt_width)
+    .attr('height', tt_height)
+    .attr('style', 'font: 14px sans-serif;')
+    .attr('viewBox', [-tt_width / 2, -tt_height / 2, tt_width, tt_height]);
+
+  // Tooltip
+  var tt_hoverDiv = d3.select('#graphSector').append('div')
+    .attr('class', 'tooltip-donut')
+    .style('opacity', 0);
+
+  // Sectores
+  const tt_g = tt_svg.selectAll('.arc')
+    .data(tt_pie(tt_grouped))
+    .enter().append('g')
+    .attr('class', 'arc');
+
+  tt_g.append('path')
+    .attr('d', tt_arc)
+    .attr('class', 'arc')
+    .style('fill', (d, i) => tt_color(i))
+    .style('fill-opacity', 0.8)
+    .style('stroke', 'black')
+    .style('stroke-width', 1)
+    .on('mouseover', function (d, i) { // Ratón encima del sector
+      // Resaltar sector
+      d3.select(this)
+        .style('fill-opacity', 1)
+        .transition().duration(500)
+        .attr('d', tt_hoverArc);
+      // Mostrar tooltip
+      tt_hoverDiv.transition()
+        .duration(50)
+        .style('opacity', 1);
+      // Texto
+      let label = tt_grouped.find(x => x[selectorVs] === (i.value).toString())[tt_key] + ': ' + i.value;
+      tt_hoverDiv.html(label)
+        // Coordenadas
+        .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 150 + 'px')
+        .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 175 + 'px');
+    })
+    .on('mouseout', function (d, i) { // Ratón sale del sector
+      // Volver sector a la normalidad
+      d3.select(this)
+        .style('fill-opacity', 0.8)
+        .transition().duration(500)
+        .attr('d', tt_arc);
+      // Ocultar tooltip
+      tt_hoverDiv.transition()
+        .duration(50)
+        .style('opacity', 0);
+    });
+}
 ```
 
 <!-- Zoomable sunburst -->
 
 ```js
 if( archivo[0].children === undefined ) {
-  graphSunburstDiv.innerHTML = "<p>Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</p>";
+  graphSunburstDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
+  graphInput[2].disabled = true;
 } else{
+  graphInput[2].disabled = false;
   graphSunburstDiv.innerHTML = "";
 
   // Datos
