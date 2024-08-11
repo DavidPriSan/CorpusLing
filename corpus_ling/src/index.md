@@ -209,6 +209,17 @@ muestraTSV.innerHTML = JSON.stringify(archivo);
 const keys = Object.keys(archivo[0]);
 ```
 
+```js
+const keysTypes = [];
+keys.forEach((item, i) => {
+  if(isNaN(archivo[0][item])) { // Texto
+    keysTypes[i] = 'text';
+  } else { // Número
+    keysTypes[i] = 'number';
+  }
+});
+```
+
 <!-- Verificación -->
 
 <div id="paso2">
@@ -269,18 +280,16 @@ let table = document.createElement('table');
 table.setAttribute('id', 'tablaVer');
 let thead = document.createElement('thead');
 let tr = document.createElement('tr');
-var headerTypes = [];
 
 // Encabezados
 keys.forEach((item, i) => {
   let th = document.createElement('th');
   th.innerText = item;
+
   // Color
-  if(isNaN(archivo[0][item])) { // Texto
-    headerTypes[i] = 'text';
+  if(keysTypes[i] == 'text') {
     th.style.color = 'seagreen';
-  } else { // Número
-    headerTypes[i] = 'number';
+  } else if(keysTypes[i] == 'number') {
     th.style.color = 'royalblue';
   }
 
@@ -290,12 +299,12 @@ keys.forEach((item, i) => {
     if (this.hasAttribute('data-clicked')) {
       return;
     }
-
+    
     this.setAttribute('data-clicked', 'yes');
     this.setAttribute('data-text', this.innerText);
     textoVf.hidden = true;
     editColVf.hidden = false;
-    selectorColInput.value = headerTypes[i];
+    selectorColInput.value = keysTypes[i];
     nombreColInput.placeholder = this.innerText;
     nombreColInput.value = this.innerText;
 
@@ -321,8 +330,8 @@ keys.forEach((item, i) => {
         // Modificar key
         var new_item = structuredClone(item);
         new_item = curr_text;
-        keys[keys.indexOf(item)] = new_item;
-        headerTypes[i] = selectorColInput.value;
+        //keys[keys.indexOf(item)] = new_item;
+        keysTypes[i] = selectorColInput.value;
 
         // Modificar key en cada objeto
         archivo.forEach( (obj) => {
@@ -338,7 +347,7 @@ keys.forEach((item, i) => {
         th.removeAttribute('data-text');
 
         // Modificar key
-        headerTypes[i] = selectorColInput.value;
+        keysTypes[i] = selectorColInput.value;
 
         // Modificar celda
         th.innerText = orig_text;
@@ -346,9 +355,9 @@ keys.forEach((item, i) => {
       }
 
       // Color
-      if(headerTypes[i] == 'text') { // Texto
+      if(keysTypes[i] == 'text') { // Texto
         th.style.color = 'seagreen';
-      } else if(headerTypes[i] == 'number') { // Número
+      } else if(keysTypes[i] == 'number') { // Número
         th.style.color = 'royalblue';
       }
 
@@ -367,13 +376,13 @@ thead.appendChild(tr);
 table.append(tr);
 
 // Ordenar conjunto
-if ((headerTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Ascendente')) {
+if ((keysTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Ascendente')) {
   archivo.sort((a,b) => (a[selectorVf] > b[selectorVf]) ? 1 : ((b[selectorVf] > a[selectorVf]) ? -1 : 0));
-} else if ((headerTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Descendente')) {
+} else if ((keysTypes[keys.indexOf(selectorVf)] === 'text') && (selectorAD === 'Descendente')) {
   archivo.sort((a,b) => (a[selectorVf] < b[selectorVf]) ? 1 : ((b[selectorVf] < a[selectorVf]) ? -1 : 0));
-} else if ((headerTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Ascendente')){
+} else if ((keysTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Ascendente')){
   archivo.sort((a,b) => a[selectorVf] - b[selectorVf]);
-} else if ((headerTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Descendente')){
+} else if ((keysTypes[keys.indexOf(selectorVf)] === 'number') && (selectorAD === 'Descendente')){
   archivo.sort((a,b) => b[selectorVf] - a[selectorVf]);
 }
 
@@ -386,9 +395,9 @@ archivo.forEach((item) => {
     let td = document.createElement('td');
     td.innerText = elem;
     // Color
-    if(isNaN(elem) && (headerTypes[i] === 'text')) { // Texto
+    if(isNaN(elem) && (keysTypes[i] === 'text')) { // Texto
       td.style.color = 'seagreen';
-    } else if (!isNaN(elem) && (headerTypes[i] === 'number')){ // Número
+    } else if (!isNaN(elem) && (keysTypes[i] === 'number')){ // Número
       td.style.color = 'royalblue';
     } else { // Error
       td.style.color = 'darkred';
@@ -444,9 +453,9 @@ archivo.forEach((item) => {
         }
 
         // Color
-        if(isNaN(curr_text) && (headerTypes[i] === 'text')) { // Texto
+        if(isNaN(curr_text) && (keysTypes[i] === 'text')) { // Texto
           td.style.color = 'seagreen';
-        } else if (!isNaN(curr_text) && (headerTypes[i] === 'number')){ // Número
+        } else if (!isNaN(curr_text) && (keysTypes[i] === 'number')){ // Número
           td.style.color = 'royalblue';
         } else { // Error
           td.style.color = 'darkred';
@@ -507,6 +516,7 @@ const nombreCol = Generators.input(nombreColInput);
     </div>
     <div class="card grid-colspan-2" style="max-height: 1200px;"> <!-- Gráfico -->
       <div id="graphButtons">
+        ${selectorIdInput}
         ${selectorVsInput}
         ${limitVsInput}
       </div>
@@ -579,9 +589,26 @@ if (graph == 0) { // Sin seleccionar gráfico
 }
 ```
 
+<!-- Botones -->
+
 ```js
+const keysText = [];
+const keysNumber = [];
+
+keys.forEach((item, i) => {
+  if(keysTypes[i] == "text") {
+    keysText.push(item);
+  } else if(keysTypes[i] == "number") {
+    keysNumber.push(item);
+  }
+});
+
+// Selector de identificador
+const selectorIdInput = Inputs.select(keysText, {label: "Selecciona identificador"});
+const selectorId = Generators.input(selectorIdInput);
+
 // Selector de columna
-const selectorVsInput = Inputs.select(keys, {label: "Seleccionar columna"});
+const selectorVsInput = Inputs.select(keysNumber, {label: "Selecciona columna"});
 const selectorVs = Generators.input(selectorVsInput);
 
 // Limitador de datos
@@ -602,10 +629,24 @@ const c_data = archivo.filter(function(d,i){
 });
 
 // Elige la primera key que no es un número
-const c_key = Object.keys(c_data[0]).find(c_key => c_data[0][c_key] === Object.values(c_data[0]).find((e) => isNaN(e)));
+const c_key = selectorId;
+
+// Agrupar por identificador
+const c_grouped = [];
+c_data.forEach((item) => {
+  var groupedO = c_grouped.find(o => { return o[c_key] == item[c_key]});
+  if (groupedO != undefined) {
+    keysNumber.forEach((key) => {
+      let num = Number(groupedO[key]) + Number(item[key])
+      groupedO[key] = num.toString();
+    });
+  } else {
+    c_grouped.push(structuredClone(item));
+  }
+});
 
 // Dimensiones
-const c_width = Math.max(200, [...new Set(c_data.map(item => item[c_key]))].length * 30),
+const c_width = Math.max(200, [...new Set(c_grouped.map(item => item[c_key]))].length * 30),
       c_height = 600,
       c_marginTop = 20,
       c_marginRight = 0,
@@ -614,13 +655,13 @@ const c_width = Math.max(200, [...new Set(c_data.map(item => item[c_key]))].leng
 
 // Escala X
 const c_x = d3.scaleBand()
-  .domain(d3.groupSort(c_data, ([d]) => -d[c_key], (d) => d[c_key]))
+  .domain(d3.groupSort(c_grouped, ([d]) => -d[c_key], (d) => d[c_key]))
   .range([c_marginLeft, c_width - c_marginRight])
   .padding(0.1);
 
 // Escala Y
 const c_y = d3.scaleLinear()
-  .domain([0, d3.max(c_data, function(d) { return +d[selectorVs]; })])
+  .domain([0, d3.max(c_grouped, function(d) { return +d[selectorVs]; })])
   .range([c_height - c_marginBottom, c_marginTop]);
 
 const c_yAxis = d3.axisLeft(c_y)
@@ -658,7 +699,7 @@ c_svg.selectAll('line.horizontal-grid')
 c_svg.append('g')
   .attr('fill', 'steelblue')
   .selectAll()
-  .data(c_data)
+  .data(c_grouped)
   .join('rect')
     .attr('x', (d) => c_x(d[c_key]))
     .attr('y', (d) => c_y(d[selectorVs]))
@@ -701,10 +742,24 @@ const tt_data = archivo.filter(function(d,i){
 });
 
 // Key para identificar elementos (primera no numérica)
-const tt_key = Object.keys(tt_data[0]).find(tt_key => tt_data[0][tt_key] === Object.values(tt_data[0]).find((e) => isNaN(e)));
+const tt_key = selectorId;
+
+// Agrupar por identificador
+const tt_grouped = [];
+tt_data.forEach((item) => {
+  var groupedO = tt_grouped.find(o => { return o[c_key] == item[c_key]});
+  if (groupedO != undefined) {
+    keysNumber.forEach((key) => {
+      let num = Number(groupedO[key]) + Number(item[key])
+      groupedO[key] = num.toString();
+    });
+  } else {
+    tt_grouped.push(structuredClone(item));
+  }
+});
 
 // Paleta de colores
-const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_data.map(item => item[selectorVs]))].length + 1));
+const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_grouped.map(item => item[selectorVs]))].length + 1));
 
 // Layout del gráfico
 const tt_pie = d3.pie()
@@ -742,7 +797,7 @@ var tt_hoverDiv = d3.select('#graphSector').append('div')
 
 // Sectores
 const tt_g = tt_svg.selectAll('.arc')
-  .data(tt_pie(tt_data))
+  .data(tt_pie(tt_grouped))
   .enter().append('g')
   .attr('class', 'arc');
 
@@ -764,7 +819,7 @@ tt_g.append('path')
       .duration(50)
       .style('opacity', 1);
     // Texto
-    let label = tt_data.find(x => x[selectorVs] === (i.value).toString())[tt_key] + ': ' + i.value;
+    let label = tt_grouped.find(x => x[selectorVs] === (i.value).toString())[tt_key] + ': ' + i.value;
     tt_hoverDiv.html(label)
       // Coordenadas
       .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 150 + 'px')
