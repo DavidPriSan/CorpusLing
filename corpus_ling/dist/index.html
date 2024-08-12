@@ -475,6 +475,12 @@ selectorVsInput
 ))
 }});
 
+define({id: "271693ac", inline: true, inputs: ["ordenarVsInput","display"], body: async (ordenarVsInput,display) => {
+display(await(
+ordenarVsInput
+))
+}});
+
 define({id: "a5c43da8", inline: true, inputs: ["limitVsInput","display"], body: async (limitVsInput,display) => {
 display(await(
 limitVsInput
@@ -541,7 +547,8 @@ if (graph == 0) { // Sin seleccionar gráfico
 return {graphBarrasDiv,graphSectorDiv,graphSunburstDiv,graphButtonsDiv,sunburstButtonsDiv};
 }});
 
-define({id: "8fddddab", inputs: ["keys","keysTypes","Inputs","Generators","archivo"], outputs: ["keysText","keysNumber","selectorIdInput","selectorId","selectorVsInput","selectorVs","limitVsInput","limitVs","limitSbInput","limitSb"], body: (keys,keysTypes,Inputs,Generators,archivo) => {
+define({id: "25cd86bc", inputs: ["keys","keysTypes","Inputs","Generators","archivo"], outputs: ["keysText","keysNumber","selectorIdInput","selectorId","selectorVsInput","selectorVs","limitVsInput","limitVs","limitSbInput","limitSb","ordenarVsInput","ordenarVs"], body: (keys,keysTypes,Inputs,Generators,archivo) => {
+// Keys divididas por tipo
 const keysText = [];
 const keysNumber = [];
 
@@ -568,10 +575,14 @@ const limitVs = Generators.input(limitVsInput);
 // Limitador Sunburst
 const limitSbInput = Inputs.range([1, 50], {step: 1, label: "Límite de elementos"});
 const limitSb = Generators.input(limitSbInput);
-return {keysText,keysNumber,selectorIdInput,selectorId,selectorVsInput,selectorVs,limitVsInput,limitVs,limitSbInput,limitSb};
+
+// Ordenar por id/dato
+const ordenarVsInput = Inputs.select(["Identificador", "Valor"], {label: "Ordenar por"});
+const ordenarVs = Generators.input(ordenarVsInput);
+return {keysText,keysNumber,selectorIdInput,selectorId,selectorVsInput,selectorVs,limitVsInput,limitVs,limitSbInput,limitSb,ordenarVsInput,ordenarVs};
 }});
 
-define({id: "ca995c30", inputs: ["keysText","keysNumber","graphBarrasDiv","graphInput","archivo","limitVs","selectorId","structuredClone","d3","selectorVs"], body: (keysText,keysNumber,graphBarrasDiv,graphInput,archivo,limitVs,selectorId,structuredClone,d3,selectorVs) => {
+define({id: "e2fb3f6a", inputs: ["keysText","keysNumber","graphBarrasDiv","graphInput","archivo","limitVs","selectorId","structuredClone","d3","ordenarVs","selectorVs"], body: (keysText,keysNumber,graphBarrasDiv,graphInput,archivo,limitVs,selectorId,structuredClone,d3,ordenarVs,selectorVs) => {
 if(keysText.length === 0 || keysNumber.length === 0) {
   graphBarrasDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
   graphInput[0].disabled = true;
@@ -584,7 +595,7 @@ if(keysText.length === 0 || keysNumber.length === 0) {
     return i < limitVs;
   });
 
-  // Elige la primera key que no es un número
+  // Elige la key
   const c_key = selectorId;
 
   // Agrupar por identificador
@@ -610,10 +621,17 @@ if(keysText.length === 0 || keysNumber.length === 0) {
         c_marginLeft = 70;
 
   // Escala X
-  const c_x = d3.scaleBand()
-    .domain(d3.groupSort(c_grouped, ([d]) => -d[c_key], (d) => d[c_key]))
-    .range([c_marginLeft, c_width - c_marginRight])
-    .padding(0.1);
+  const c_x = d3.scaleBand();
+
+  if(ordenarVs == "Identificador") { // Ordenado por id
+    c_x.domain(d3.groupSort(c_grouped, ([d]) => -d[c_key], (d) => d[c_key]))
+      .range([c_marginLeft, c_width - c_marginRight])
+      .padding(0.1);
+  } else if(ordenarVs == "Valor") { // Ordenado por valor
+    c_x.domain(d3.groupSort(c_grouped, ([d]) => -d[selectorVs], (d) => d[c_key]))
+      .range([c_marginLeft, c_width - c_marginRight])
+      .padding(0.1);
+  }  
 
   // Escala Y
   const c_y = d3.scaleLinear()
@@ -684,7 +702,7 @@ if(keysText.length === 0 || keysNumber.length === 0) {
 }
 }});
 
-define({id: "15308959", inputs: ["keysText","keysNumber","graphSectorDiv","graphInput","archivo","limitVs","selectorId","structuredClone","d3","selectorVs"], body: (keysText,keysNumber,graphSectorDiv,graphInput,archivo,limitVs,selectorId,structuredClone,d3,selectorVs) => {
+define({id: "4569e212", inputs: ["keysText","keysNumber","graphSectorDiv","graphInput","archivo","limitVs","selectorId","structuredClone","ordenarVs","d3","selectorVs"], body: (keysText,keysNumber,graphSectorDiv,graphInput,archivo,limitVs,selectorId,structuredClone,ordenarVs,d3,selectorVs) => {
 if(keysText.length === 0 || keysNumber.length === 0) {
   graphSectorDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
   graphInput[1].disabled = true;
@@ -703,7 +721,7 @@ if(keysText.length === 0 || keysNumber.length === 0) {
     return i < limitVs;
   });
 
-  // Key para identificar elementos (primera no numérica)
+  // Key para identificar elementos
   const tt_key = selectorId;
 
   // Agrupar por identificador
@@ -719,6 +737,13 @@ if(keysText.length === 0 || keysNumber.length === 0) {
       tt_grouped.push(structuredClone(item));
     }
   });
+
+  // Ordenar conjunto
+  if(ordenarVs == "Identificador") { // Por id
+    tt_grouped.sort((a, b) => d3.ascending(a[tt_key], b[tt_key]));
+  } else if(ordenarVs == "Valor") { // Por valor
+    tt_grouped.sort(function(a, b) { return (b[selectorVs] - a[selectorVs]); });
+  }
 
   // Paleta de colores
   const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_grouped.map(item => item[selectorVs]))].length + 1));
@@ -1124,6 +1149,7 @@ th {
       <div id="graphButtons">
         <span id="cell-3a01cff3"><span class="observablehq-loading"></span></span>
         <span id="cell-742f3895"><span class="observablehq-loading"></span></span>
+        <span id="cell-271693ac"><span class="observablehq-loading"></span></span>
         <span id="cell-a5c43da8"><span class="observablehq-loading"></span></span>
       </div>
       <div id="graphBarras" style="overflow-y: scroll">
@@ -1144,15 +1170,15 @@ th {
 <!-- Elección gráfico -->
 <div id="cell-b43675ff" class="observablehq observablehq--block"></div>
 <!-- Botones -->
-<div id="cell-8fddddab" class="observablehq observablehq--block"></div>
+<div id="cell-25cd86bc" class="observablehq observablehq--block"></div>
 <!-- Gráfico de barras -->
-<div id="cell-ca995c30" class="observablehq observablehq--block"></div>
+<div id="cell-e2fb3f6a" class="observablehq observablehq--block"></div>
 <!-- Diagrama de sectores -->
-<div id="cell-15308959" class="observablehq observablehq--block"></div>
+<div id="cell-4569e212" class="observablehq observablehq--block"></div>
 <!-- Zoomable sunburst -->
 <div id="cell-c495d342" class="observablehq observablehq--block"></div>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-11T12:53:35">Aug 11, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-12T10:31:11">Aug 12, 2024</a>.</div>
 </footer>
 </div>
