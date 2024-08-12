@@ -518,6 +518,7 @@ const nombreCol = Generators.input(nombreColInput);
       <div id="graphButtons">
         ${selectorIdInput}
         ${selectorVsInput}
+        ${ordenarVsInput}
         ${limitVsInput}
       </div>
       <div id="graphBarras" style="overflow-y: scroll">
@@ -592,6 +593,7 @@ if (graph == 0) { // Sin seleccionar gráfico
 <!-- Botones -->
 
 ```js
+// Keys divididas por tipo
 const keysText = [];
 const keysNumber = [];
 
@@ -618,6 +620,10 @@ const limitVs = Generators.input(limitVsInput);
 // Limitador Sunburst
 const limitSbInput = Inputs.range([1, 50], {step: 1, label: "Límite de elementos"});
 const limitSb = Generators.input(limitSbInput);
+
+// Ordenar por id/dato
+const ordenarVsInput = Inputs.select(["Identificador", "Valor"], {label: "Ordenar por"});
+const ordenarVs = Generators.input(ordenarVsInput);
 ```
 
 <!-- Gráfico de barras -->
@@ -635,7 +641,7 @@ if(keysText.length === 0 || keysNumber.length === 0) {
     return i < limitVs;
   });
 
-  // Elige la primera key que no es un número
+  // Elige la key
   const c_key = selectorId;
 
   // Agrupar por identificador
@@ -661,10 +667,17 @@ if(keysText.length === 0 || keysNumber.length === 0) {
         c_marginLeft = 70;
 
   // Escala X
-  const c_x = d3.scaleBand()
-    .domain(d3.groupSort(c_grouped, ([d]) => -d[c_key], (d) => d[c_key]))
-    .range([c_marginLeft, c_width - c_marginRight])
-    .padding(0.1);
+  const c_x = d3.scaleBand();
+
+  if(ordenarVs == "Identificador") { // Ordenado por id
+    c_x.domain(d3.groupSort(c_grouped, ([d]) => -d[c_key], (d) => d[c_key]))
+      .range([c_marginLeft, c_width - c_marginRight])
+      .padding(0.1);
+  } else if(ordenarVs == "Valor") { // Ordenado por valor
+    c_x.domain(d3.groupSort(c_grouped, ([d]) => -d[selectorVs], (d) => d[c_key]))
+      .range([c_marginLeft, c_width - c_marginRight])
+      .padding(0.1);
+  }  
 
   // Escala Y
   const c_y = d3.scaleLinear()
@@ -756,7 +769,7 @@ if(keysText.length === 0 || keysNumber.length === 0) {
     return i < limitVs;
   });
 
-  // Key para identificar elementos (primera no numérica)
+  // Key para identificar elementos
   const tt_key = selectorId;
 
   // Agrupar por identificador
@@ -772,6 +785,13 @@ if(keysText.length === 0 || keysNumber.length === 0) {
       tt_grouped.push(structuredClone(item));
     }
   });
+
+  // Ordenar conjunto
+  if(ordenarVs == "Identificador") { // Por id
+    tt_grouped.sort((a, b) => d3.ascending(a[tt_key], b[tt_key]));
+  } else if(ordenarVs == "Valor") { // Por valor
+    tt_grouped.sort(function(a, b) { return (b[selectorVs] - a[selectorVs]); });
+  }
 
   // Paleta de colores
   const tt_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, [...new Set(tt_grouped.map(item => item[selectorVs]))].length + 1));
