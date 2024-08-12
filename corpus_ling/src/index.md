@@ -514,16 +514,23 @@ const nombreCol = Generators.input(nombreColInput);
       <br>
       ${graphInput}
     </div>
-    <div class="card grid-colspan-2" style="max-height: 1200px;"> <!-- Gráfico -->
+    <div class="card grid-colspan-2" style="max-height: 1400px;"> <!-- Gráfico -->
       <div id="graphButtons">
         ${selectorIdInput}
         ${selectorVsInput}
-        ${ordenarVsInput}
         ${limitVsInput}
+      </div>
+      <div id="graphButtonsLimits">
+        ${ordenarVsInput}
       </div>
       <div id="graphBarras" style="overflow-y: scroll">
       </div>
       <div id="graphSector">
+      </div>
+      <div id="hexbinButtons">
+        ${selectorRadioInput}
+      </div>
+      <div id="graphHexbin">
       </div>
       <div id="sunburstButtons">
         ${limitSbInput}
@@ -547,7 +554,8 @@ const graphInput = Inputs.button(
   [
     ["Gráfico de barras", (value) => 1],
     ["Diagrama de sectores", (value) => 2],
-    ["Zoomable sunburst", (value) => 3]
+    ["Hexbin", (value) => 3],
+    ["Zoomable sunburst", (value) => 4]
   ],
   { value: 0 }
 );
@@ -561,32 +569,55 @@ const graphBarrasDiv = document.getElementById("graphBarras");
 const graphSectorDiv = document.getElementById("graphSector");
 const graphSunburstDiv = document.getElementById("graphSunburst");
 const graphButtonsDiv = document.getElementById("graphButtons");
+const graphButtonsLimitsDiv = document.getElementById("graphButtonsLimits");
 const sunburstButtonsDiv = document.getElementById("sunburstButtons");
+const graphHexbinDiv = document.getElementById("graphHexbin");
+const hexbinButtonsDiv = document.getElementById("hexbinButtons");
 
 if (graph == 0) { // Sin seleccionar gráfico
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
   graphSunburstDiv.hidden = true;
   graphButtonsDiv.hidden = true;
+  graphButtonsLimitsDiv.hidden = true;
   sunburstButtonsDiv.hidden = true;
+  graphHexbinDiv.hidden = true;
+  hexbinButtonsDiv.hidden = true;
 } else if (graph == 1) { // Barras
   graphBarrasDiv.hidden = false;
   graphSectorDiv.hidden = true;
   graphSunburstDiv.hidden = true;
   graphButtonsDiv.hidden = false;
+  graphButtonsLimitsDiv.hidden = false;
   sunburstButtonsDiv.hidden = true;
+  graphHexbinDiv.hidden = true;
+  hexbinButtonsDiv.hidden = true;
 } else if (graph == 2) { // Sectores
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = false;
   graphSunburstDiv.hidden = true;
   graphButtonsDiv.hidden = false;
+  graphButtonsLimitsDiv.hidden = false;
   sunburstButtonsDiv.hidden = true;
-}  else if (graph == 3) { // Zoomable Sunburst
+  graphHexbinDiv.hidden = true;
+  hexbinButtonsDiv.hidden = true;
+}  else if (graph == 3) { // Hexbin
+  graphBarrasDiv.hidden = true;
+  graphSectorDiv.hidden = true;
+  graphSunburstDiv.hidden = true;
+  graphButtonsDiv.hidden = false;
+  graphButtonsLimitsDiv.hidden = true;
+  sunburstButtonsDiv.hidden = true;
+  graphHexbinDiv.hidden = false;
+  hexbinButtonsDiv.hidden = false;
+}   else if (graph == 4) { // Zoomable Sunburst
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
   graphSunburstDiv.hidden = false;
   graphButtonsDiv.hidden = true;
+  graphButtonsLimitsDiv.hidden = true;
   sunburstButtonsDiv.hidden = false;
+  hexbinButtonsDiv.hidden = true;
 }
 ```
 
@@ -624,6 +655,10 @@ const limitSb = Generators.input(limitSbInput);
 // Ordenar por id/dato
 const ordenarVsInput = Inputs.select(["Identificador", "Valor"], {label: "Ordenar por"});
 const ordenarVs = Generators.input(ordenarVsInput);
+
+// Selector Radio
+const selectorRadioInput = Inputs.range([2, 20], {step: 1, label: "Radio"});
+const selectorRadio = Generators.input(selectorRadioInput);
 ```
 
 <!-- Gráfico de barras -->
@@ -873,15 +908,113 @@ if(keysText.length === 0 || keysNumber.length === 0) {
     });
 }
 ```
+<!-- Hexbin -->
+
+```js
+import * as d3hexbin from "d3-hexbin";
+
+if(keysText.length === 0 || keysNumber.length === 0) {
+  graphHexbinDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
+  graphInput[2].disabled = true;
+} else {
+  graphHexbinDiv.innerHTML = "";
+  graphInput[2].disabled = false;
+
+  // Dimensiones
+  const hb_width = 650;
+  const hb_height = hb_width;
+  const hb_marginTop = 20;
+  const hb_marginRight = 20;
+  const hb_marginBottom = 30;
+  const hb_marginLeft = 40;
+
+  // Datos
+  const hb_data = archivo.filter(function(d,i){
+    return i < limitVs;
+  });
+
+  // Escala X
+  const hb_x = d3.scaleBand()
+    .domain(d3.groupSort(hb_data, ([d]) => -d[selectorId], (d) => d[selectorId]))
+    .range([hb_marginLeft, hb_width - hb_marginRight]);
+
+  // Escala Y
+  const hb_y = d3.scaleLinear()
+    .domain([0, d3.max(hb_data, function(d) { return +d[selectorVs]; })])
+    .rangeRound([hb_height - hb_marginBottom, hb_marginTop]);
+
+  // Clasificación de datos
+  const hb_hexbin = d3hexbin.hexbin()
+    .x(d => hb_x(d[selectorId]))
+    .y(d => hb_y(d[selectorVs]))
+    .radius(selectorRadio)
+    .extent([[hb_marginLeft, hb_marginTop], [hb_width - hb_marginRight, hb_height - hb_marginBottom]]);
+
+  const hb_bins = hb_hexbin(hb_data);
+
+  // Escala de color
+  const hb_color = d3.scaleSequential(d3.interpolateBuPu)
+    .domain([0, d3.max(hb_bins, d => d.length) / 2]);
+
+  // Borra gráfico anterior (si existe)
+  let hexbinAnt = document.getElementById('hexbin');
+  if (hexbinAnt != null) {
+    hexbinAnt.remove();
+  }
+
+  // SVG
+  const hb_svg = d3.select('#graphHexbin').append('svg')
+    .attr('id', 'hexbin')
+    .attr('viewBox', [0, 0, hb_width, hb_height]);
+
+  // Eje X
+  hb_svg.append('g')
+      .attr('transform', `translate(0, ${hb_height - 10})`)
+      .call(d3.axisBottom(hb_x).tickSizeOuter(0))
+      .call(g => g.select('.domain').remove())
+      .call(g => g.append('text')
+          .attr('x', hb_width - hb_marginRight)
+          .attr('y', -4)
+          .attr('fill', 'currentColor')
+          .attr('font-weight', 'bold')
+          .attr('text-anchor', 'end')
+          .text(selectorId));
+
+  // Eje Y
+  hb_svg.append('g')
+      .attr('transform', `translate(${hb_marginLeft}, 0)`)
+      .call(d3.axisLeft(hb_y).ticks(null, '.1s'))
+      .call(g => g.select('.domain').remove())
+      .call(g => g.append('text')
+          .attr('x', 4)
+          .attr('y', hb_marginTop)
+          .attr('dy', '.75em')
+          .attr('fill', 'currentColor')
+          .attr('font-weight', 'bold')
+          .attr('text-anchor', 'start')
+          .text(selectorVs));
+
+  // Hexágonos
+  hb_svg.append('g')
+      .attr('fill', '#ddd')
+      .attr('stroke', 'black')
+    .selectAll('path')
+    .data(hb_bins)
+    .enter().append('path')
+      .attr('transform', d => `translate(${d.x},${d.y})`)
+      .attr('d', hb_hexbin.hexagon())
+      .attr('fill', bin => hb_color(bin.length));
+}
+```
 
 <!-- Zoomable sunburst -->
 
 ```js
 if( archivo[0].children === undefined ) {
   graphSunburstDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
-  graphInput[2].disabled = true;
+  graphInput[3].disabled = true;
 } else{
-  graphInput[2].disabled = false;
+  graphInput[3].disabled = false;
   graphSunburstDiv.innerHTML = "";
 
   // Datos
