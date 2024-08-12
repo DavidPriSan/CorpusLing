@@ -12,6 +12,7 @@
 <link rel="modulepreload" href="./_observablehq/client.js">
 <link rel="modulepreload" href="./_observablehq/runtime.js">
 <link rel="modulepreload" href="./_observablehq/stdlib.js">
+<link rel="modulepreload" href="./_node/d3-hexbin@0.2.2/index.js">
 <link rel="modulepreload" href="./_npm/d3@7.9.0/_esm.js">
 <link rel="modulepreload" href="./_observablehq/stdlib/inputs.js">
 <link rel="modulepreload" href="./_npm/htl@0.3.1/_esm.js">
@@ -475,15 +476,21 @@ selectorVsInput
 ))
 }});
 
+define({id: "a5c43da8", inline: true, inputs: ["limitVsInput","display"], body: async (limitVsInput,display) => {
+display(await(
+limitVsInput
+))
+}});
+
 define({id: "271693ac", inline: true, inputs: ["ordenarVsInput","display"], body: async (ordenarVsInput,display) => {
 display(await(
 ordenarVsInput
 ))
 }});
 
-define({id: "a5c43da8", inline: true, inputs: ["limitVsInput","display"], body: async (limitVsInput,display) => {
+define({id: "59d44c5b", inline: true, inputs: ["selectorRadioInput","display"], body: async (selectorRadioInput,display) => {
 display(await(
-limitVsInput
+selectorRadioInput
 ))
 }});
 
@@ -498,13 +505,14 @@ define({id: "539d631a", body: () => {
 
 }});
 
-define({id: "331e4bcc", inputs: ["Inputs","Generators"], outputs: ["graphInput","graph"], body: (Inputs,Generators) => {
+define({id: "bb43cb29", inputs: ["Inputs","Generators"], outputs: ["graphInput","graph"], body: (Inputs,Generators) => {
 // Botonera gráficos
 const graphInput = Inputs.button(
   [
     ["Gráfico de barras", (value) => 1],
     ["Diagrama de sectores", (value) => 2],
-    ["Zoomable sunburst", (value) => 3]
+    ["Hexbin", (value) => 3],
+    ["Zoomable sunburst", (value) => 4]
   ],
   { value: 0 }
 );
@@ -512,42 +520,65 @@ const graph = Generators.input(graphInput);
 return {graphInput,graph};
 }});
 
-define({id: "b43675ff", inputs: ["graph"], outputs: ["graphBarrasDiv","graphSectorDiv","graphSunburstDiv","graphButtonsDiv","sunburstButtonsDiv"], body: (graph) => {
+define({id: "4f515976", inputs: ["graph"], outputs: ["graphBarrasDiv","graphSectorDiv","graphSunburstDiv","graphButtonsDiv","graphButtonsLimitsDiv","sunburstButtonsDiv","graphHexbinDiv","hexbinButtonsDiv"], body: (graph) => {
 const graphBarrasDiv = document.getElementById("graphBarras");
 const graphSectorDiv = document.getElementById("graphSector");
 const graphSunburstDiv = document.getElementById("graphSunburst");
 const graphButtonsDiv = document.getElementById("graphButtons");
+const graphButtonsLimitsDiv = document.getElementById("graphButtonsLimits");
 const sunburstButtonsDiv = document.getElementById("sunburstButtons");
+const graphHexbinDiv = document.getElementById("graphHexbin");
+const hexbinButtonsDiv = document.getElementById("hexbinButtons");
 
 if (graph == 0) { // Sin seleccionar gráfico
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
   graphSunburstDiv.hidden = true;
   graphButtonsDiv.hidden = true;
+  graphButtonsLimitsDiv.hidden = true;
   sunburstButtonsDiv.hidden = true;
+  graphHexbinDiv.hidden = true;
+  hexbinButtonsDiv.hidden = true;
 } else if (graph == 1) { // Barras
   graphBarrasDiv.hidden = false;
   graphSectorDiv.hidden = true;
   graphSunburstDiv.hidden = true;
   graphButtonsDiv.hidden = false;
+  graphButtonsLimitsDiv.hidden = false;
   sunburstButtonsDiv.hidden = true;
+  graphHexbinDiv.hidden = true;
+  hexbinButtonsDiv.hidden = true;
 } else if (graph == 2) { // Sectores
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = false;
   graphSunburstDiv.hidden = true;
   graphButtonsDiv.hidden = false;
+  graphButtonsLimitsDiv.hidden = false;
   sunburstButtonsDiv.hidden = true;
-}  else if (graph == 3) { // Zoomable Sunburst
+  graphHexbinDiv.hidden = true;
+  hexbinButtonsDiv.hidden = true;
+}  else if (graph == 3) { // Hexbin
+  graphBarrasDiv.hidden = true;
+  graphSectorDiv.hidden = true;
+  graphSunburstDiv.hidden = true;
+  graphButtonsDiv.hidden = false;
+  graphButtonsLimitsDiv.hidden = true;
+  sunburstButtonsDiv.hidden = true;
+  graphHexbinDiv.hidden = false;
+  hexbinButtonsDiv.hidden = false;
+}   else if (graph == 4) { // Zoomable Sunburst
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
   graphSunburstDiv.hidden = false;
   graphButtonsDiv.hidden = true;
+  graphButtonsLimitsDiv.hidden = true;
   sunburstButtonsDiv.hidden = false;
+  hexbinButtonsDiv.hidden = true;
 }
-return {graphBarrasDiv,graphSectorDiv,graphSunburstDiv,graphButtonsDiv,sunburstButtonsDiv};
+return {graphBarrasDiv,graphSectorDiv,graphSunburstDiv,graphButtonsDiv,graphButtonsLimitsDiv,sunburstButtonsDiv,graphHexbinDiv,hexbinButtonsDiv};
 }});
 
-define({id: "25cd86bc", inputs: ["keys","keysTypes","Inputs","Generators","archivo"], outputs: ["keysText","keysNumber","selectorIdInput","selectorId","selectorVsInput","selectorVs","limitVsInput","limitVs","limitSbInput","limitSb","ordenarVsInput","ordenarVs"], body: (keys,keysTypes,Inputs,Generators,archivo) => {
+define({id: "c821672a", inputs: ["keys","keysTypes","Inputs","Generators","archivo"], outputs: ["keysText","keysNumber","selectorIdInput","selectorId","selectorVsInput","selectorVs","limitVsInput","limitVs","limitSbInput","limitSb","ordenarVsInput","ordenarVs","selectorRadioInput","selectorRadio"], body: (keys,keysTypes,Inputs,Generators,archivo) => {
 // Keys divididas por tipo
 const keysText = [];
 const keysNumber = [];
@@ -579,7 +610,11 @@ const limitSb = Generators.input(limitSbInput);
 // Ordenar por id/dato
 const ordenarVsInput = Inputs.select(["Identificador", "Valor"], {label: "Ordenar por"});
 const ordenarVs = Generators.input(ordenarVsInput);
-return {keysText,keysNumber,selectorIdInput,selectorId,selectorVsInput,selectorVs,limitVsInput,limitVs,limitSbInput,limitSb,ordenarVsInput,ordenarVs};
+
+// Selector Radio
+const selectorRadioInput = Inputs.range([2, 20], {step: 1, label: "Radio"});
+const selectorRadio = Generators.input(selectorRadioInput);
+return {keysText,keysNumber,selectorIdInput,selectorId,selectorVsInput,selectorVs,limitVsInput,limitVs,limitSbInput,limitSb,ordenarVsInput,ordenarVs,selectorRadioInput,selectorRadio};
 }});
 
 define({id: "e2fb3f6a", inputs: ["keysText","keysNumber","graphBarrasDiv","graphInput","archivo","limitVs","selectorId","structuredClone","d3","ordenarVs","selectorVs"], body: (keysText,keysNumber,graphBarrasDiv,graphInput,archivo,limitVs,selectorId,structuredClone,d3,ordenarVs,selectorVs) => {
@@ -826,12 +861,110 @@ if(keysText.length === 0 || keysNumber.length === 0) {
 }
 }});
 
-define({id: "c495d342", inputs: ["archivo","graphSunburstDiv","graphInput","structuredClone","limitSb","d3"], body: (archivo,graphSunburstDiv,graphInput,structuredClone,limitSb,d3) => {
+define({id: "e020330b", inputs: ["keysText","keysNumber","graphHexbinDiv","graphInput","archivo","limitVs","d3","selectorId","selectorVs","selectorRadio"], outputs: ["d3hexbin"], body: async (keysText,keysNumber,graphHexbinDiv,graphInput,archivo,limitVs,d3,selectorId,selectorVs,selectorRadio) => {
+const d3hexbin = await import("./_node/d3-hexbin@0.2.2/index.js");
+
+if(keysText.length === 0 || keysNumber.length === 0) {
+  graphHexbinDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
+  graphInput[2].disabled = true;
+} else {
+  graphHexbinDiv.innerHTML = "";
+  graphInput[2].disabled = false;
+
+  // Dimensiones
+  const hb_width = 650;
+  const hb_height = hb_width;
+  const hb_marginTop = 20;
+  const hb_marginRight = 20;
+  const hb_marginBottom = 30;
+  const hb_marginLeft = 40;
+
+  // Datos
+  const hb_data = archivo.filter(function(d,i){
+    return i < limitVs;
+  });
+
+  // Escala X
+  const hb_x = d3.scaleBand()
+    .domain(d3.groupSort(hb_data, ([d]) => -d[selectorId], (d) => d[selectorId]))
+    .range([hb_marginLeft, hb_width - hb_marginRight]);
+
+  // Escala Y
+  const hb_y = d3.scaleLinear()
+    .domain([0, d3.max(hb_data, function(d) { return +d[selectorVs]; })])
+    .rangeRound([hb_height - hb_marginBottom, hb_marginTop]);
+
+  // Clasificación de datos
+  const hb_hexbin = d3hexbin.hexbin()
+    .x(d => hb_x(d[selectorId]))
+    .y(d => hb_y(d[selectorVs]))
+    .radius(selectorRadio)
+    .extent([[hb_marginLeft, hb_marginTop], [hb_width - hb_marginRight, hb_height - hb_marginBottom]]);
+
+  const hb_bins = hb_hexbin(hb_data);
+
+  // Escala de color
+  const hb_color = d3.scaleSequential(d3.interpolateBuPu)
+    .domain([0, d3.max(hb_bins, d => d.length) / 2]);
+
+  // Borra gráfico anterior (si existe)
+  let hexbinAnt = document.getElementById('hexbin');
+  if (hexbinAnt != null) {
+    hexbinAnt.remove();
+  }
+
+  // SVG
+  const hb_svg = d3.select('#graphHexbin').append('svg')
+    .attr('id', 'hexbin')
+    .attr('viewBox', [0, 0, hb_width, hb_height]);
+
+  // Eje X
+  hb_svg.append('g')
+      .attr('transform', `translate(0, ${hb_height - 10})`)
+      .call(d3.axisBottom(hb_x).tickSizeOuter(0))
+      .call(g => g.select('.domain').remove())
+      .call(g => g.append('text')
+          .attr('x', hb_width - hb_marginRight)
+          .attr('y', -4)
+          .attr('fill', 'currentColor')
+          .attr('font-weight', 'bold')
+          .attr('text-anchor', 'end')
+          .text(selectorId));
+
+  // Eje Y
+  hb_svg.append('g')
+      .attr('transform', `translate(${hb_marginLeft}, 0)`)
+      .call(d3.axisLeft(hb_y).ticks(null, '.1s'))
+      .call(g => g.select('.domain').remove())
+      .call(g => g.append('text')
+          .attr('x', 4)
+          .attr('y', hb_marginTop)
+          .attr('dy', '.75em')
+          .attr('fill', 'currentColor')
+          .attr('font-weight', 'bold')
+          .attr('text-anchor', 'start')
+          .text(selectorVs));
+
+  // Hexágonos
+  hb_svg.append('g')
+      .attr('fill', '#ddd')
+      .attr('stroke', 'black')
+    .selectAll('path')
+    .data(hb_bins)
+    .enter().append('path')
+      .attr('transform', d => `translate(${d.x},${d.y})`)
+      .attr('d', hb_hexbin.hexagon())
+      .attr('fill', bin => hb_color(bin.length));
+}
+return {d3hexbin};
+}});
+
+define({id: "714063c0", inputs: ["archivo","graphSunburstDiv","graphInput","structuredClone","limitSb","d3"], body: (archivo,graphSunburstDiv,graphInput,structuredClone,limitSb,d3) => {
 if( archivo[0].children === undefined ) {
   graphSunburstDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
-  graphInput[2].disabled = true;
+  graphInput[3].disabled = true;
 } else{
-  graphInput[2].disabled = false;
+  graphInput[3].disabled = false;
   graphSunburstDiv.innerHTML = "";
 
   // Datos
@@ -1145,16 +1278,23 @@ th {
       <br>
       <span id="cell-84ae4f69"><span class="observablehq-loading"></span></span>
     </div>
-    <div class="card grid-colspan-2" style="max-height: 1200px;"> <!-- Gráfico -->
+    <div class="card grid-colspan-2" style="max-height: 1400px;"> <!-- Gráfico -->
       <div id="graphButtons">
         <span id="cell-3a01cff3"><span class="observablehq-loading"></span></span>
         <span id="cell-742f3895"><span class="observablehq-loading"></span></span>
-        <span id="cell-271693ac"><span class="observablehq-loading"></span></span>
         <span id="cell-a5c43da8"><span class="observablehq-loading"></span></span>
+      </div>
+      <div id="graphButtonsLimits">
+        <span id="cell-271693ac"><span class="observablehq-loading"></span></span>
       </div>
       <div id="graphBarras" style="overflow-y: scroll">
       </div>
       <div id="graphSector">
+      </div>
+      <div id="hexbinButtons">
+        <span id="cell-59d44c5b"><span class="observablehq-loading"></span></span>
+      </div>
+      <div id="graphHexbin">
       </div>
       <div id="sunburstButtons">
         <span id="cell-5e9b754b"><span class="observablehq-loading"></span></span>
@@ -1166,19 +1306,21 @@ th {
 </div>
 <!-- Botones visualización -->
 <div id="cell-539d631a" class="observablehq observablehq--block"></div>
-<div id="cell-331e4bcc" class="observablehq observablehq--block"></div>
+<div id="cell-bb43cb29" class="observablehq observablehq--block"></div>
 <!-- Elección gráfico -->
-<div id="cell-b43675ff" class="observablehq observablehq--block"></div>
+<div id="cell-4f515976" class="observablehq observablehq--block"></div>
 <!-- Botones -->
-<div id="cell-25cd86bc" class="observablehq observablehq--block"></div>
+<div id="cell-c821672a" class="observablehq observablehq--block"></div>
 <!-- Gráfico de barras -->
 <div id="cell-e2fb3f6a" class="observablehq observablehq--block"></div>
 <!-- Diagrama de sectores -->
 <div id="cell-4569e212" class="observablehq observablehq--block"></div>
+<!-- Hexbin -->
+<div id="cell-e020330b" class="observablehq observablehq--block"></div>
 <!-- Zoomable sunburst -->
-<div id="cell-c495d342" class="observablehq observablehq--block"></div>
+<div id="cell-714063c0" class="observablehq observablehq--block"></div>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-12T10:31:11">Aug 12, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-12T20:45:31">Aug 12, 2024</a>.</div>
 </footer>
 </div>
