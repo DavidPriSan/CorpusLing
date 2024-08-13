@@ -505,7 +505,7 @@ define({id: "539d631a", body: () => {
 
 }});
 
-define({id: "5f720340", inputs: ["Inputs","Generators"], outputs: ["graphInput","graph"], body: (Inputs,Generators) => {
+define({id: "c8f1a515", inputs: ["Inputs","Generators"], outputs: ["graphInput","graph"], body: (Inputs,Generators) => {
 // Botonera gráficos
 const graphInput = Inputs.button(
   [
@@ -513,7 +513,8 @@ const graphInput = Inputs.button(
     ["Diagrama de sectores", (value) => 2],
     ["Hexbin", (value) => 3],
     ["Zoomable sunburst", (value) => 4],
-    ["Zoomable Icicle", (value) => 5]
+    ["Zoomable Icicle", (value) => 5],
+    ["Collapsible Tree", (value) => 6]
   ],
   { value: 0 }
 );
@@ -521,7 +522,7 @@ const graph = Generators.input(graphInput);
 return {graphInput,graph};
 }});
 
-define({id: "e132f872", inputs: ["graph"], outputs: ["graphBarrasDiv","graphSectorDiv","graphSunburstDiv","graphButtonsDiv","graphButtonsLimitsDiv","sunburstButtonsDiv","graphHexbinDiv","hexbinButtonsDiv","graphIcicleDiv"], body: (graph) => {
+define({id: "d5ebbc8a", inputs: ["graph"], outputs: ["graphBarrasDiv","graphSectorDiv","graphSunburstDiv","graphButtonsDiv","graphButtonsLimitsDiv","sunburstButtonsDiv","graphHexbinDiv","hexbinButtonsDiv","graphIcicleDiv","graphTreeDiv"], body: (graph) => {
 const graphBarrasDiv = document.getElementById("graphBarras");
 const graphSectorDiv = document.getElementById("graphSector");
 const graphSunburstDiv = document.getElementById("graphSunburst");
@@ -531,6 +532,7 @@ const sunburstButtonsDiv = document.getElementById("sunburstButtons");
 const graphHexbinDiv = document.getElementById("graphHexbin");
 const hexbinButtonsDiv = document.getElementById("hexbinButtons");
 const graphIcicleDiv = document.getElementById("graphIcicle");
+const graphTreeDiv = document.getElementById("graphTree");
 
 if (graph == 0) { // Sin seleccionar gráfico
   graphBarrasDiv.hidden = true;
@@ -542,6 +544,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
   graphIcicleDiv.hidden = true;
+  graphTreeDiv.hidden = true;
 } else if (graph == 1) { // Barras
   graphBarrasDiv.hidden = false;
   graphSectorDiv.hidden = true;
@@ -552,6 +555,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
   graphIcicleDiv.hidden = true;
+  graphTreeDiv.hidden = true;
 } else if (graph == 2) { // Sectores
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = false;
@@ -562,6 +566,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
   graphIcicleDiv.hidden = true;
+  graphTreeDiv.hidden = true;
 } else if (graph == 3) { // Hexbin
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
@@ -572,6 +577,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   graphHexbinDiv.hidden = false;
   hexbinButtonsDiv.hidden = false;
   graphIcicleDiv.hidden = true;
+  graphTreeDiv.hidden = true;
 } else if (graph == 4) { // Zoomable Sunburst
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
@@ -581,6 +587,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   sunburstButtonsDiv.hidden = false;
   hexbinButtonsDiv.hidden = true;
   graphIcicleDiv.hidden = true;
+  graphTreeDiv.hidden = true;
 } else if (graph == 5) { // Zoomable Icicle
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
@@ -590,8 +597,19 @@ if (graph == 0) { // Sin seleccionar gráfico
   sunburstButtonsDiv.hidden = false;
   hexbinButtonsDiv.hidden = true;
   graphIcicleDiv.hidden = false;
+  graphTreeDiv.hidden = true;
+}  else if (graph == 6) { // Collapsible Tree
+  graphBarrasDiv.hidden = true;
+  graphSectorDiv.hidden = true;
+  graphSunburstDiv.hidden = true;
+  graphButtonsDiv.hidden = true;
+  graphButtonsLimitsDiv.hidden = true;
+  sunburstButtonsDiv.hidden = false;
+  hexbinButtonsDiv.hidden = true;
+  graphIcicleDiv.hidden = true;
+  graphTreeDiv.hidden = false;
 }
-return {graphBarrasDiv,graphSectorDiv,graphSunburstDiv,graphButtonsDiv,graphButtonsLimitsDiv,sunburstButtonsDiv,graphHexbinDiv,hexbinButtonsDiv,graphIcicleDiv};
+return {graphBarrasDiv,graphSectorDiv,graphSunburstDiv,graphButtonsDiv,graphButtonsLimitsDiv,sunburstButtonsDiv,graphHexbinDiv,hexbinButtonsDiv,graphIcicleDiv,graphTreeDiv};
 }});
 
 define({id: "932acefc", inputs: ["keys","keysTypes","Inputs","Generators","archivo"], outputs: ["keysText","keysNumber","selectorIdInput","selectorId","selectorVsInput","selectorVs","limitVsInput","limitVs","limitSbInput","limitSb","ordenarVsInput","ordenarVs","selectorRadioInput","selectorRadio"], body: (keys,keysTypes,Inputs,Generators,archivo) => {
@@ -1251,6 +1269,177 @@ if( archivo[0].children === undefined ) {
 }
 }});
 
+define({id: "af6d1128", inputs: ["archivo","graphTreeDiv","graphInput","structuredClone","limitSb","d3"], body: (archivo,graphTreeDiv,graphInput,structuredClone,limitSb,d3) => {
+if( archivo[0].children === undefined ) {
+  graphTreeDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
+  graphInput[5].disabled = true;
+} else{
+  graphInput[5].disabled = false;
+  graphTreeDiv.innerHTML = "";
+
+  // Datos
+  var tempArchivo = structuredClone(archivo);
+  var ct_data = limitData(tempArchivo[0], limitSb);
+
+  // Dimensiones
+  const ct_width = 928;
+  const ct_marginTop = 10;
+  const ct_marginRight = 10;
+  const ct_marginBottom = 10;
+  const ct_marginLeft = 40;
+
+  // Raíz (líneas separadas por dx y columnas por dy, como si la raíz estuviera abajo)
+  const ct_root = d3.hierarchy(ct_data);
+  const ct_dx = 10;
+  const ct_dy = (ct_width - ct_marginRight - ct_marginLeft) / (1 + ct_root.height);
+
+  // Layout
+  const ct_tree = d3.tree().nodeSize([ct_dx, ct_dy]);
+  const ct_diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x);
+
+  // Borra gráfico anterior (si existe)
+  let treeAnt = document.getElementById('tree');
+  if (treeAnt != null) {
+    treeAnt.remove();
+  }
+
+  // SVG
+  const ct_svg = d3.select('#graphTree').append('svg')
+      .attr('id', 'tree')
+      .attr('width', ct_width)
+      .attr('height', ct_dx)
+      .attr('viewBox', [-ct_marginLeft, -ct_marginTop, ct_width, ct_dx])
+      .attr('style', 'max-width: 100%; height: auto; font: 10px sans-serif; user-select: none;');
+
+  const ct_gLink = ct_svg.append('g')
+      .attr('fill', 'none')
+      .attr('stroke', '#555')
+      .attr('stroke-opacity', 0.4)
+      .attr('stroke-width', 1.5);
+
+  const ct_gNode = ct_svg.append('g')
+      .attr('cursor', 'pointer')
+      .attr('pointer-events', 'all');
+
+  // Actualizar el árbol
+  function update(event, source) {
+    const duration = event?.altKey ? 2500 : 250; // Ralentiza transición
+    const nodes = ct_root.descendants().reverse();
+    const links = ct_root.links();
+
+    // Layout
+    ct_tree(ct_root);
+
+    let left = ct_root;
+    let right = ct_root;
+    ct_root.eachBefore(node => {
+      if (node.x < left.x) left = node;
+      if (node.x > right.x) right = node;
+    });
+
+    const height = right.x - left.x + ct_marginTop + ct_marginBottom;
+
+    const transition = ct_svg.transition()
+        .duration(duration)
+        .attr('height', height)
+        .attr('viewBox', [-ct_marginLeft, left.x - ct_marginTop, ct_width, height])
+        .tween('resize', window.ResizeObserver ? null : () => () => ct_svg.dispatch('toggle'));
+
+    // Actualiza nodos
+    const node = ct_gNode.selectAll('g')
+      .data(nodes, d => d.id);
+
+    // Nodos nuevos
+    const nodeEnter = node.enter().append('g')
+        .attr('transform', d => `translate(${source.y0},${source.x0})`)
+        .attr('fill-opacity', 0)
+        .attr('stroke-opacity', 0)
+        .on('click', (event, d) => {
+          d.children = d.children ? null : d._children;
+          update(event, d);
+        });
+
+    nodeEnter.append('circle')
+        .attr('r', 2.5)
+        .attr('fill', d => d._children ? '#555' : '#999')
+        .attr('stroke-width', 10);
+
+    nodeEnter.append('text')
+        .attr('dy', '0.31em')
+        .attr('x', d => d._children ? -6 : 6)
+        .attr('text-anchor', d => d._children ? 'end' : 'start')
+        .text(d => d.data.name)
+        .attr('stroke-linejoin', 'round')
+        .attr('stroke-width', 3)
+        .attr('stroke', 'white')
+        .attr('paint-order', 'stroke');
+
+    // Cambia nodos nuevos de posición
+    const nodeUpdate = node.merge(nodeEnter).transition(transition)
+        .attr('transform', d => `translate(${d.y},${d.x})`)
+        .attr('fill-opacity', 1)
+        .attr('stroke-opacity', 1);
+
+    // Mueve nodos existentes a la posición del padre
+    const nodeExit = node.exit().transition(transition).remove()
+        .attr('transform', d => `translate(${source.y},${source.x})`)
+        .attr('fill-opacity', 0)
+        .attr('stroke-opacity', 0);
+
+    // Actualiza enlaces
+    const link = ct_gLink.selectAll('path')
+      .data(links, d => d.target.id);
+
+    // Añade los nuevos enlaces
+    const linkEnter = link.enter().append('path')
+        .attr('d', d => {
+          const o = {x: source.x0, y: source.y0};
+          return ct_diagonal({source: o, target: o});
+        });
+
+    // Posición de enlaces
+    link.merge(linkEnter).transition(transition)
+        .attr('d', ct_diagonal);
+
+    // Posición de nodos
+    link.exit().transition(transition).remove()
+        .attr('d', d => {
+          const o = {x: source.x, y: source.y};
+          return ct_diagonal({source: o, target: o});
+        });
+
+    // Posiciones antiguas par transición
+    ct_root.eachBefore(d => {
+      d.x0 = d.x;
+      d.y0 = d.y;
+    });
+  }
+
+  // Configuración inicial
+  ct_root.x0 = ct_dy / 2;
+  ct_root.y0 = 0;
+  ct_root.descendants().forEach((d, i) => {
+    d.id = i;
+    d._children = d.children;
+    if (d.depth && d.data.name.length !== 4) d.children = null;
+  });
+
+  update(null, ct_root);
+
+  // Limitar hijos
+  function limitData(d, i) {
+    if (d.hasOwnProperty('children')) {
+      if(d.children.length > i) {
+        d.children = d.children.slice(0, i);
+      }
+      d.children.forEach((e) => limitData(e, i));
+      return d;
+    }
+    return d;
+  }
+}
+}});
+
 </script>
 <div id="observablehq-center">
 <main id="observablehq-main" class="observablehq">
@@ -1441,14 +1630,16 @@ th {
       </div>
       <div id="graphIcicle" style="overflow-y: hidden">
       </div>
+      <div id="graphTree" style="max-height: 1200px; overflow-y: scroll">
+      </div>
     </div>
   </div>
 </div>
 <!-- Botones visualización -->
 <div id="cell-539d631a" class="observablehq observablehq--block"></div>
-<div id="cell-5f720340" class="observablehq observablehq--block"></div>
+<div id="cell-c8f1a515" class="observablehq observablehq--block"></div>
 <!-- Elección gráfico -->
-<div id="cell-e132f872" class="observablehq observablehq--block"></div>
+<div id="cell-d5ebbc8a" class="observablehq observablehq--block"></div>
 <!-- Botones -->
 <div id="cell-932acefc" class="observablehq observablehq--block"></div>
 <!-- Gráfico de barras -->
@@ -1461,8 +1652,10 @@ th {
 <div id="cell-714063c0" class="observablehq observablehq--block"></div>
 <!-- Zoomable Icicle -->
 <div id="cell-b5c90d90" class="observablehq observablehq--block"></div>
+<!-- Collapsible Tree -->
+<div id="cell-af6d1128" class="observablehq observablehq--block"></div>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-13T16:35:10">Aug 13, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-13T19:38:42">Aug 13, 2024</a>.</div>
 </footer>
 </div>
