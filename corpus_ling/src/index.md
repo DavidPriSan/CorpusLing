@@ -537,6 +537,8 @@ const nombreCol = Generators.input(nombreColInput);
       </div>
       <div id="graphSunburst">
       </div>
+      <div id="graphIcicle" style="overflow-y: hidden">
+      </div>
     </div>
   </div>
 </div>
@@ -555,7 +557,8 @@ const graphInput = Inputs.button(
     ["Gráfico de barras", (value) => 1],
     ["Diagrama de sectores", (value) => 2],
     ["Hexbin", (value) => 3],
-    ["Zoomable sunburst", (value) => 4]
+    ["Zoomable sunburst", (value) => 4],
+    ["Zoomable Icicle", (value) => 5]
   ],
   { value: 0 }
 );
@@ -573,6 +576,7 @@ const graphButtonsLimitsDiv = document.getElementById("graphButtonsLimits");
 const sunburstButtonsDiv = document.getElementById("sunburstButtons");
 const graphHexbinDiv = document.getElementById("graphHexbin");
 const hexbinButtonsDiv = document.getElementById("hexbinButtons");
+const graphIcicleDiv = document.getElementById("graphIcicle");
 
 if (graph == 0) { // Sin seleccionar gráfico
   graphBarrasDiv.hidden = true;
@@ -583,6 +587,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   sunburstButtonsDiv.hidden = true;
   graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
+  graphIcicleDiv.hidden = true;
 } else if (graph == 1) { // Barras
   graphBarrasDiv.hidden = false;
   graphSectorDiv.hidden = true;
@@ -592,6 +597,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   sunburstButtonsDiv.hidden = true;
   graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
+  graphIcicleDiv.hidden = true;
 } else if (graph == 2) { // Sectores
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = false;
@@ -601,7 +607,8 @@ if (graph == 0) { // Sin seleccionar gráfico
   sunburstButtonsDiv.hidden = true;
   graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
-}  else if (graph == 3) { // Hexbin
+  graphIcicleDiv.hidden = true;
+} else if (graph == 3) { // Hexbin
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
   graphSunburstDiv.hidden = true;
@@ -610,7 +617,8 @@ if (graph == 0) { // Sin seleccionar gráfico
   sunburstButtonsDiv.hidden = true;
   graphHexbinDiv.hidden = false;
   hexbinButtonsDiv.hidden = false;
-}   else if (graph == 4) { // Zoomable Sunburst
+  graphIcicleDiv.hidden = true;
+} else if (graph == 4) { // Zoomable Sunburst
   graphBarrasDiv.hidden = true;
   graphSectorDiv.hidden = true;
   graphSunburstDiv.hidden = false;
@@ -618,6 +626,16 @@ if (graph == 0) { // Sin seleccionar gráfico
   graphButtonsLimitsDiv.hidden = true;
   sunburstButtonsDiv.hidden = false;
   hexbinButtonsDiv.hidden = true;
+  graphIcicleDiv.hidden = true;
+} else if (graph == 5) { // Zoomable Icicle
+  graphBarrasDiv.hidden = true;
+  graphSectorDiv.hidden = true;
+  graphSunburstDiv.hidden = true;
+  graphButtonsDiv.hidden = true;
+  graphButtonsLimitsDiv.hidden = true;
+  sunburstButtonsDiv.hidden = false;
+  hexbinButtonsDiv.hidden = true;
+  graphIcicleDiv.hidden = false;
 }
 ```
 
@@ -645,11 +663,11 @@ const selectorVsInput = Inputs.select(keysNumber, {label: "Selecciona columna"})
 const selectorVs = Generators.input(selectorVsInput);
 
 // Limitador de datos
-const limitVsInput = Inputs.range([1, archivo.length], {step: 1, label: "Límite de elementos"});
+const limitVsInput = Inputs.range([1, archivo.length], {step: 1, label: "Límite de elementos", value: (archivo.length / 10)});
 const limitVs = Generators.input(limitVsInput);
 
 // Limitador Sunburst
-const limitSbInput = Inputs.range([1, 50], {step: 1, label: "Límite de elementos"});
+const limitSbInput = Inputs.range([1, 50], {step: 1, label: "Límite de elementos", value: 5});
 const limitSb = Generators.input(limitSbInput);
 
 // Ordenar por id/dato
@@ -1147,6 +1165,130 @@ if( archivo[0].children === undefined ) {
     const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
     const y = (d.y0 + d.y1) / 2 * ng_radius;
     return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+  }
+
+  // Limitar hijos
+  function limitData(d, i) {
+    if (d.hasOwnProperty('children')) {
+      if(d.children.length > i) {
+        d.children = d.children.slice(0, i);
+      }
+      d.children.forEach((e) => limitData(e, i));
+      return d;
+    }
+    return d;
+  }
+}
+```
+
+<!-- Zoomable Icicle -->
+
+```js
+if( archivo[0].children === undefined ) {
+  graphIcicleDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
+  graphInput[4].disabled = true;
+} else{
+  graphInput[4].disabled = false;
+  graphIcicleDiv.innerHTML = "";
+
+  // Datos
+  var tempArchivo = structuredClone(archivo);
+  var ic_data = limitData(tempArchivo[0], limitSb);
+
+  // Dimensiones
+  const ic_width = 928;
+  const ic_height = 1200;
+
+  // Escala de colores
+  const ic_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, ic_data.children.length + 1));
+
+  // Layout
+  const ic_hierarchy = d3.hierarchy(ic_data)
+      .sum(d => d.value)
+      .sort((a, b) => b.height - a.height || b.value - a.value);
+  const ic_root = d3.partition()
+      .size([ic_height, (ic_hierarchy.height + 1) * ic_width / 3])
+    (ic_hierarchy);
+
+  // Borra gráfico anterior (si existe)
+  let icicleAnt = document.getElementById('icicle');
+  if (icicleAnt != null) {
+    icicleAnt.remove();
+  }
+
+  // SVG
+  const ic_svg = d3.select('#graphIcicle').append('svg')
+      .attr('id', 'icicle')
+      .attr('viewBox', [0, 0, ic_width, ic_height])
+      .attr('width', ic_width)
+      .attr('height', ic_height)
+      .attr('style', 'max-width: 100%; height: auto; font: 10px sans-serif;');
+
+  // Celdas
+  const ic_cell = ic_svg.selectAll('g')
+    .data(ic_root.descendants())
+    .join('g')
+      .attr('transform', d => `translate(${d.y0},${d.x0})`);
+
+  const ic_rect = ic_cell.append('rect')
+      .attr('width', d => d.y1 - d.y0 - 1)
+      .attr('height', d => rectHeight(d))
+      .attr('fill-opacity', 0.6)
+      .attr('fill', d => {
+        if (!d.depth) return '#ccc';
+        while (d.depth > 1) d = d.parent;
+        return ic_color(d.data.name);
+      })
+      .style('cursor', 'pointer')
+      .on('click', clicked);
+
+  // Label
+  const ic_text = ic_cell.append('text')
+      .style('user-select', 'none')
+      .attr('pointer-events', 'none')
+      .attr('x', 4)
+      .attr('y', 13)
+      .attr('fill-opacity', d => +labelVisible(d));
+
+  ic_text.append('tspan')
+      .text(d => d.data.name);
+
+  const ic_format = d3.format(',d');
+  const ic_tspan = ic_text.append('tspan')
+      .attr('fill-opacity', d => labelVisible(d) * 0.7)
+      .text(d => ` ${ic_format(d.value)}`);
+
+  ic_cell.append('title')
+      .text(d => `${d.ancestors().map(d => d.data.name).reverse().join('/')}\n${ic_format(d.value)}`);
+
+  // Cambiar el focus al clickar
+  let focus = ic_root;
+  function clicked(event, p) {
+    focus = focus === p ? p = p.parent : p;
+
+    ic_root.each(d => d.target = {
+      x0: (d.x0 - p.x0) / (p.x1 - p.x0) * ic_height,
+      x1: (d.x1 - p.x0) / (p.x1 - p.x0) * ic_height,
+      y0: d.y0 - p.y0,
+      y1: d.y1 - p.y0
+    });
+
+    const t = ic_cell.transition().duration(750)
+        .attr('transform', d => `translate(${d.target.y0},${d.target.x0})`);
+
+    ic_rect.transition(t).attr('height', d => rectHeight(d.target));
+    ic_text.transition(t).attr('fill-opacity', d => +labelVisible(d.target));
+    ic_tspan.transition(t).attr('fill-opacity', d => labelVisible(d.target) * 0.7);
+  }
+  
+  // Altura de las celdas
+  function rectHeight(d) {
+    return d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2);
+  }
+
+  // Determina si debe mostrarse la label
+  function labelVisible(d) {
+    return d.y1 <= width && d.y0 >= 0 && d.x1 - d.x0 > 16;
   }
 
   // Limitar hijos
