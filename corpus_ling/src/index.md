@@ -221,11 +221,6 @@ console.log(archivoLocal);
 ```
 
 ```js
-console.log("2");
-console.log(archivoLocalInput.value);
-```
-
-```js
 // Parseo de archivo
 var arch = [{}];
 var arch1 = [{}];
@@ -245,8 +240,6 @@ if(selectorDMInput.value != "") {
 }
  // Local
 if(archivoLocalInput.value != undefined) {
-  console.log("3");
-  console.log(archivoLocalInput.value);
   if(archivoLocal.name.split('.')[1] == 'tsv') {
     arch1 = archivoLocal.tsv();
   } else if(archivoLocal.name.split('.')[1] == 'csv') {
