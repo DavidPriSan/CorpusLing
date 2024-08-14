@@ -153,7 +153,6 @@ const carga = Generators.input(cargaInput);
 const archivoLocalInput = Inputs.file({
   label: "Selecciona tu archivo local",
   accept: ".tsv,.csv,.json",
-  required: true,
   width: 310,
 });
 const archivoLocal = Generators.input(archivoLocalInput);
@@ -166,7 +165,7 @@ const selectorDM = Generators.input(selectorDMInput);
 ```js
 // Datos de muestra
 const coca_ngrams = FileAttachment("./data/coca_ngrams.tsv").tsv();
-const collocates = FileAttachment("./data/collocates.csv").csv({typed: true});
+const collocates = FileAttachment("./data/collocates.tsv").tsv();
 const ngrams = FileAttachment("./data/ngrams.json").json();
 const wordFrequency = FileAttachment("./data/wordFrequency.tsv").tsv();
 ```
@@ -217,22 +216,37 @@ if (carga == 0) { // Sin seleccionar modo
 ```
 
 ```js
-// Parseo del archivo local
+console.log("1");
+console.log(archivoLocal);
+```
+
+```js
+console.log("2");
+console.log(archivoLocalInput.value);
+```
+
+```js
+// Parseo de archivo
 var arch = [{}];
 var arch1 = [{}];
 var arch2 = [{}];
 
-if(selectorDM == "Ngrams (COCA)") {
-  arch2 = coca_ngrams;
-} else if(selectorDM == "Collocates (COCA)") {
-  arch2 = collocates;
-} else if(selectorDM == "Word Frequency (COCA)") {
-  arch2 = wordFrequency;
-} else if(selectorDM == "Ngrams (Modificado)") {
-  arch2 = ngrams;
+// Muestra
+if(selectorDMInput.value != "") {
+  if(selectorDM == "Ngrams (COCA)") {
+    arch2 = coca_ngrams;
+  } else if(selectorDM == "Collocates (COCA)") {
+    arch2 = collocates;
+  } else if(selectorDM == "Word Frequency (COCA)") {
+    arch2 = wordFrequency;
+  } else if(selectorDM == "Ngrams (Modificado)") {
+    arch2 = ngrams;
+  }
 }
-
-if(archivoLocalInput.value != undefined){
+ // Local
+if(archivoLocalInput.value != undefined) {
+  console.log("3");
+  console.log(archivoLocalInput.value);
   if(archivoLocal.name.split('.')[1] == 'tsv') {
     arch1 = archivoLocal.tsv();
   } else if(archivoLocal.name.split('.')[1] == 'csv') {
@@ -252,15 +266,19 @@ const archivo = arch;
 ```
 
 ```js
+// Muestra archivo (formato json)
 if(JSON.stringify(archivo) != "[{}]") {
   muestraJsonDiv.innerHTML = JSON.stringify(archivo);
 } else {
   muestraJsonDiv.innerHTML = "";
 }
+
+// Keys
 const keys = Object.keys(archivo[0]);
 ```
 
 ```js
+// Tipos de las keys
 const keysTypes = [];
 keys.forEach((item, i) => {
   if(isNaN(archivo[0][item])) { // Texto
