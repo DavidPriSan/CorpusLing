@@ -56,19 +56,37 @@
 import {define} from "./_observablehq/client.js";
 import {registerFile} from "./_observablehq/stdlib.js";
 
-registerFile("./ArchivoLocal.png", {"name":"./ArchivoLocal.png","mimeType":"image/png","path":"./_file/ArchivoLocal.2ade03ea.png","lastModified":1723629279294});
-registerFile("./DatosMuestra.png", {"name":"./DatosMuestra.png","mimeType":"image/png","path":"./_file/DatosMuestra.8dfeeead.png","lastModified":1723630120831});
+registerFile("./archivoLocal.png", {"name":"./archivoLocal.png","mimeType":"image/png","path":"./_file/archivoLocal.3d38a876.png","lastModified":1723646285746});
+registerFile("./cargaDatos.png", {"name":"./cargaDatos.png","mimeType":"image/png","path":"./_file/cargaDatos.29dc66a4.png","lastModified":1723645991252});
 registerFile("./data/coca_ngrams.tsv", {"name":"./data/coca_ngrams.tsv","mimeType":"text/tab-separated-values","path":"./_file/data/coca_ngrams.8b3bf103.tsv","lastModified":1722160339053});
 registerFile("./data/collocates.tsv", {"name":"./data/collocates.tsv","mimeType":"text/tab-separated-values","path":"./_file/data/collocates.b3d062d0.tsv","lastModified":1723639973773});
 registerFile("./data/ngrams.json", {"name":"./data/ngrams.json","mimeType":"application/json","path":"./_file/data/ngrams.ac6feb30.json","lastModified":1722159782977});
 registerFile("./data/wordFrequency.tsv", {"name":"./data/wordFrequency.tsv","mimeType":"text/tab-separated-values","path":"./_file/data/wordFrequency.0667c1af.tsv","lastModified":1722154749253});
+registerFile("./datosMuestra.png", {"name":"./datosMuestra.png","mimeType":"image/png","path":"./_file/datosMuestra.7bfd4b07.png","lastModified":1723646438901});
+registerFile("./graficoBarras.png", {"name":"./graficoBarras.png","mimeType":"image/png","path":"./_file/graficoBarras.e07787a0.png","lastModified":1723647816779});
+registerFile("./graficoHexbin.png", {"name":"./graficoHexbin.png","mimeType":"image/png","path":"./_file/graficoHexbin.f6b3bf96.png","lastModified":1723648037721});
+registerFile("./graficoIcicle.png", {"name":"./graficoIcicle.png","mimeType":"image/png","path":"./_file/graficoIcicle.3ecbc895.png","lastModified":1723648659594});
+registerFile("./graficoSectores.png", {"name":"./graficoSectores.png","mimeType":"image/png","path":"./_file/graficoSectores.a137b4ae.png","lastModified":1723647729019});
+registerFile("./graficoSunburst.png", {"name":"./graficoSunburst.png","mimeType":"image/png","path":"./_file/graficoSunburst.fa7029a8.png","lastModified":1723648355382});
+registerFile("./graficoTree.png", {"name":"./graficoTree.png","mimeType":"image/png","path":"./_file/graficoTree.87d48101.png","lastModified":1723649106866});
+registerFile("./verificacion.png", {"name":"./verificacion.png","mimeType":"image/png","path":"./_file/verificacion.c46e829a.png","lastModified":1723646567206});
+registerFile("./visualizacion.png", {"name":"./visualizacion.png","mimeType":"image/png","path":"./_file/visualizacion.1ebf66d8.png","lastModified":1723646807728});
 
-define({id: "9b7a985f", inputs: ["Inputs","Generators"], outputs: ["pasosInput","pasos"], body: (Inputs,Generators) => {
+define({id: "9e64f040", inputs: ["FileAttachment"], outputs: ["cargaDatospng","verificacionpng","visualizacionpng"], body: (FileAttachment) => {
+// Imagenes
+const cargaDatospng = FileAttachment("./cargaDatos.png").image({ width: 512 });
+const verificacionpng = FileAttachment("./verificacion.png").image({ width: 512 });
+const visualizacionpng = FileAttachment("./visualizacion.png").image({ width: 512 });
+return {cargaDatospng,verificacionpng,visualizacionpng};
+}});
+
+define({id: "9237a1be", inputs: ["Inputs","cargaDatospng","verificacionpng","visualizacionpng","Generators"], outputs: ["pasosInput","pasos"], body: (Inputs,cargaDatospng,verificacionpng,visualizacionpng,Generators) => {
+// Botonera
 const pasosInput = Inputs.button(
   [
-    ["1: Carga de datos", (value) => 1],
-    ["2: Verificación", (value) => 2],
-    ["3: Visualización", (value) => 3]
+    [cargaDatospng, (value) => 1],
+    [verificacionpng, (value) => 2],
+    [visualizacionpng, (value) => 3]
   ],
   { value: 0 }
 );
@@ -107,19 +125,19 @@ if (pasos == 0) { // Sin seleccionar paso
 return {paso1Div,paso2Div,paso3Div};
 }});
 
-define({id: "aa964d73", inputs: ["FileAttachment"], outputs: ["ArchivoLocalpng","DatosMuestrapng"], body: (FileAttachment) => {
+define({id: "23db7176", inputs: ["FileAttachment"], outputs: ["archivoLocalpng","datosMuestrapng"], body: (FileAttachment) => {
 // Imagenes
-const ArchivoLocalpng = FileAttachment("./ArchivoLocal.png").image({ width: 64 });
-const DatosMuestrapng = FileAttachment("./DatosMuestra.png").image({ width: 64 });
-return {ArchivoLocalpng,DatosMuestrapng};
+const archivoLocalpng = FileAttachment("./archivoLocal.png").image({ width: 96 });
+const datosMuestrapng = FileAttachment("./datosMuestra.png").image({ width: 96 });
+return {archivoLocalpng,datosMuestrapng};
 }});
 
-define({id: "452f71f2", inputs: ["Inputs","ArchivoLocalpng","DatosMuestrapng","Generators"], outputs: ["cargaInput","carga"], body: (Inputs,ArchivoLocalpng,DatosMuestrapng,Generators) => {
+define({id: "0bbcd4ef", inputs: ["Inputs","archivoLocalpng","datosMuestrapng","Generators"], outputs: ["cargaInput","carga"], body: (Inputs,archivoLocalpng,datosMuestrapng,Generators) => {
 // Botonera
 const cargaInput = Inputs.button(
   [
-    [ArchivoLocalpng, (value) => 1],
-    [DatosMuestrapng, (value) => 2]
+    [archivoLocalpng, (value) => 1],
+    [datosMuestrapng, (value) => 2]
   ], 
   { value: 0 }
 );
@@ -194,17 +212,7 @@ if (carga == 0) { // Sin seleccionar modo
 return {cargaDiv,aLocalDiv,datosMuestraDiv,muestraJsonDiv};
 }});
 
-define({id: "6f5744ec", inputs: ["archivoLocal"], body: (archivoLocal) => {
-console.log("1");
-console.log(archivoLocal);
-}});
-
-define({id: "a676b1bc", inputs: ["archivoLocalInput"], body: (archivoLocalInput) => {
-console.log("2");
-console.log(archivoLocalInput.value);
-}});
-
-define({id: "c34ad383", inputs: ["selectorDMInput","selectorDM","coca_ngrams","collocates","wordFrequency","ngrams","archivoLocalInput","archivoLocal","carga"], outputs: ["arch","arch1","arch2","archivo"], body: (selectorDMInput,selectorDM,coca_ngrams,collocates,wordFrequency,ngrams,archivoLocalInput,archivoLocal,carga) => {
+define({id: "edd8342b", inputs: ["selectorDMInput","selectorDM","coca_ngrams","collocates","wordFrequency","ngrams","archivoLocalInput","archivoLocal","carga"], outputs: ["arch","arch1","arch2","archivo"], body: (selectorDMInput,selectorDM,coca_ngrams,collocates,wordFrequency,ngrams,archivoLocalInput,archivoLocal,carga) => {
 // Parseo de archivo
 var arch = [{}];
 var arch1 = [{}];
@@ -222,10 +230,9 @@ if(selectorDMInput.value != "") {
     arch2 = ngrams;
   }
 }
- // Local
+
+// Local
 if(archivoLocalInput.value != undefined) {
-  console.log("3");
-  console.log(archivoLocalInput.value);
   if(archivoLocal.name.split('.')[1] == 'tsv') {
     arch1 = archivoLocal.tsv();
   } else if(archivoLocal.name.split('.')[1] == 'csv') {
@@ -578,21 +585,27 @@ limitSbInput
 ))
 }});
 
-define({id: "539d631a", body: () => {
+define({id: "0e5d6dfe", inputs: ["FileAttachment"], outputs: ["graficoBarraspng","graficoSectorespng","graficoHexbinpng","graficoSunburstpng","graficoIciclepng","graficoTreepng"], body: (FileAttachment) => {
 // Imagenes
-
+const graficoBarraspng = FileAttachment("./graficoBarras.png").image({ width: 128 });
+const graficoSectorespng = FileAttachment("./graficoSectores.png").image({ width: 128 });
+const graficoHexbinpng = FileAttachment("./graficoHexbin.png").image({ width: 128 });
+const graficoSunburstpng = FileAttachment("./graficoSunburst.png").image({ width: 128 });
+const graficoIciclepng = FileAttachment("./graficoIcicle.png").image({ width: 128 });
+const graficoTreepng = FileAttachment("./graficoTree.png").image({ width: 128 });
+return {graficoBarraspng,graficoSectorespng,graficoHexbinpng,graficoSunburstpng,graficoIciclepng,graficoTreepng};
 }});
 
-define({id: "c8f1a515", inputs: ["Inputs","Generators"], outputs: ["graphInput","graph"], body: (Inputs,Generators) => {
+define({id: "bc2b753f", inputs: ["Inputs","graficoBarraspng","graficoSectorespng","graficoHexbinpng","graficoSunburstpng","graficoIciclepng","graficoTreepng","Generators"], outputs: ["graphInput","graph"], body: (Inputs,graficoBarraspng,graficoSectorespng,graficoHexbinpng,graficoSunburstpng,graficoIciclepng,graficoTreepng,Generators) => {
 // Botonera gráficos
 const graphInput = Inputs.button(
   [
-    ["Gráfico de barras", (value) => 1],
-    ["Diagrama de sectores", (value) => 2],
-    ["Hexbin", (value) => 3],
-    ["Zoomable sunburst", (value) => 4],
-    ["Zoomable Icicle", (value) => 5],
-    ["Collapsible Tree", (value) => 6]
+    [graficoBarraspng, (value) => 1],
+    [graficoSectorespng, (value) => 2],
+    [graficoHexbinpng, (value) => 3],
+    [graficoSunburstpng, (value) => 4],
+    [graficoIciclepng, (value) => 5],
+    [graficoTreepng, (value) => 6]
   ],
   { value: 0 }
 );
@@ -600,7 +613,7 @@ const graph = Generators.input(graphInput);
 return {graphInput,graph};
 }});
 
-define({id: "d5ebbc8a", inputs: ["graph"], outputs: ["graphBarrasDiv","graphSectorDiv","graphSunburstDiv","graphButtonsDiv","graphButtonsLimitsDiv","sunburstButtonsDiv","graphHexbinDiv","hexbinButtonsDiv","graphIcicleDiv","graphTreeDiv"], body: (graph) => {
+define({id: "cc5fabb7", inputs: ["graph"], outputs: ["graphBarrasDiv","graphSectorDiv","graphSunburstDiv","graphButtonsDiv","graphButtonsLimitsDiv","sunburstButtonsDiv","graphHexbinDiv","hexbinButtonsDiv","graphIcicleDiv","graphTreeDiv"], body: (graph) => {
 const graphBarrasDiv = document.getElementById("graphBarras");
 const graphSectorDiv = document.getElementById("graphSector");
 const graphSunburstDiv = document.getElementById("graphSunburst");
@@ -663,6 +676,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   graphButtonsDiv.hidden = true;
   graphButtonsLimitsDiv.hidden = true;
   sunburstButtonsDiv.hidden = false;
+  graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
   graphIcicleDiv.hidden = true;
   graphTreeDiv.hidden = true;
@@ -673,6 +687,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   graphButtonsDiv.hidden = true;
   graphButtonsLimitsDiv.hidden = true;
   sunburstButtonsDiv.hidden = false;
+  graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
   graphIcicleDiv.hidden = false;
   graphTreeDiv.hidden = true;
@@ -683,6 +698,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   graphButtonsDiv.hidden = true;
   graphButtonsLimitsDiv.hidden = true;
   sunburstButtonsDiv.hidden = false;
+  graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
   graphIcicleDiv.hidden = true;
   graphTreeDiv.hidden = false;
@@ -1599,21 +1615,22 @@ th {
   <h2>TFG Grado en Ingeniería Informática</h2>
 </div>
 <!-- Botones pasos -->
-<div id="cell-9b7a985f" class="observablehq observablehq--block"></div>
+<div id="cell-9e64f040" class="observablehq observablehq--block"></div>
+<div id="cell-9237a1be" class="observablehq observablehq--block"></div>
 <div class="card">
   <span id="cell-00afe3dd"><span class="observablehq-loading"></span></span>
 </div>
 <!-- Procesamiento pasos -->
 <div id="cell-294defac" class="observablehq observablehq--block"></div>
 <!-- Botones carga de datos -->
-<div id="cell-aa964d73" class="observablehq observablehq--block"></div>
-<div id="cell-452f71f2" class="observablehq observablehq--block"></div>
+<div id="cell-23db7176" class="observablehq observablehq--block"></div>
+<div id="cell-0bbcd4ef" class="observablehq observablehq--block"></div>
 <!-- Modo de carga -->
 <div id="cell-f0d2f559" class="observablehq observablehq--block"></div>
 <div id="cell-5646b267" class="observablehq observablehq--block"></div>
 <div id="paso1">
 <div class="grid grid-cols-2">
-  <div class="card"> <!-- Elegir modo -->
+  <div class="card" style="max-height: 450px;"> <!-- Elegir modo -->
     <h1>Elige el modo de carga de datos</h1>
     <br>
     <span id="cell-dbeaed21"><span class="observablehq-loading"></span></span>
@@ -1621,20 +1638,19 @@ th {
     <div id="carga"></div>
     <div id="aLocal">
       <span id="cell-6effe680"><span class="observablehq-loading"></span></span>
+      <div class="note">El archivo debe pesar menos de 50MB</div>
     </div>
     <div id="datosMuestra">
       <span id="cell-26283d44"><span class="observablehq-loading"></span></span>
     </div>
   </div>
-  <div class="card" style="max-height: 350px;"> <!-- Visualización de datos -->
+  <div class="card" style="max-height: 450px;"> <!-- Visualización de datos -->
     <div id="muestraJson" class="scrollable-div"></div>
   </div>
 </div>
 </div>
 <div id="cell-71dae3ff" class="observablehq observablehq--block"></div>
-<div id="cell-6f5744ec" class="observablehq observablehq--block"></div>
-<div id="cell-a676b1bc" class="observablehq observablehq--block"></div>
-<div id="cell-c34ad383" class="observablehq observablehq--block"></div>
+<div id="cell-edd8342b" class="observablehq observablehq--block"></div>
 <div id="cell-eaaf9d5c" class="observablehq observablehq--block"></div>
 <div id="cell-aeb8984c" class="observablehq observablehq--block"></div>
 <!-- Verificación -->
@@ -1687,7 +1703,9 @@ th {
     <div class="card"> <!-- Texto -->
       <h1>Elige el tipo de gráfico</h1>
       <br>
-      <span id="cell-84ae4f69"><span class="observablehq-loading"></span></span>
+      <div style="overflow-y: auto">
+        <span id="cell-84ae4f69"><span class="observablehq-loading"></span></span>
+      </div>
     </div>
     <div class="card grid-colspan-2" style="max-height: 1400px;"> <!-- Gráfico -->
       <div id="graphButtons">
@@ -1698,7 +1716,7 @@ th {
       <div id="graphButtonsLimits">
         <span id="cell-271693ac"><span class="observablehq-loading"></span></span>
       </div>
-      <div id="graphBarras" style="overflow-y: scroll">
+      <div id="graphBarras" style="overflow-x: scroll">
       </div>
       <div id="graphSector">
       </div>
@@ -1720,10 +1738,10 @@ th {
   </div>
 </div>
 <!-- Botones visualización -->
-<div id="cell-539d631a" class="observablehq observablehq--block"></div>
-<div id="cell-c8f1a515" class="observablehq observablehq--block"></div>
+<div id="cell-0e5d6dfe" class="observablehq observablehq--block"></div>
+<div id="cell-bc2b753f" class="observablehq observablehq--block"></div>
 <!-- Elección gráfico -->
-<div id="cell-d5ebbc8a" class="observablehq observablehq--block"></div>
+<div id="cell-cc5fabb7" class="observablehq observablehq--block"></div>
 <!-- Botones -->
 <div id="cell-932acefc" class="observablehq observablehq--block"></div>
 <!-- Gráfico de barras -->
@@ -1740,6 +1758,6 @@ th {
 <div id="cell-af6d1128" class="observablehq observablehq--block"></div>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-14T15:00:08">Aug 14, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-14T18:16:29">Aug 14, 2024</a>.</div>
 </footer>
 </div>
