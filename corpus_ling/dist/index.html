@@ -59,7 +59,7 @@ import {registerFile} from "./_observablehq/stdlib.js";
 registerFile("./ArchivoLocal.png", {"name":"./ArchivoLocal.png","mimeType":"image/png","path":"./_file/ArchivoLocal.2ade03ea.png","lastModified":1723629279294});
 registerFile("./DatosMuestra.png", {"name":"./DatosMuestra.png","mimeType":"image/png","path":"./_file/DatosMuestra.8dfeeead.png","lastModified":1723630120831});
 registerFile("./data/coca_ngrams.tsv", {"name":"./data/coca_ngrams.tsv","mimeType":"text/tab-separated-values","path":"./_file/data/coca_ngrams.8b3bf103.tsv","lastModified":1722160339053});
-registerFile("./data/collocates.csv", {"name":"./data/collocates.csv","mimeType":"text/csv","path":"./_file/data/collocates.d75dfb2a.csv","lastModified":1723629884966});
+registerFile("./data/collocates.tsv", {"name":"./data/collocates.tsv","mimeType":"text/tab-separated-values","path":"./_file/data/collocates.b3d062d0.tsv","lastModified":1723639973773});
 registerFile("./data/ngrams.json", {"name":"./data/ngrams.json","mimeType":"application/json","path":"./_file/data/ngrams.ac6feb30.json","lastModified":1722159782977});
 registerFile("./data/wordFrequency.tsv", {"name":"./data/wordFrequency.tsv","mimeType":"text/tab-separated-values","path":"./_file/data/wordFrequency.0667c1af.tsv","lastModified":1722154749253});
 
@@ -127,12 +127,11 @@ const carga = Generators.input(cargaInput);
 return {cargaInput,carga};
 }});
 
-define({id: "79846788", inputs: ["Inputs","Generators"], outputs: ["archivoLocalInput","archivoLocal","selectorDMInput","selectorDM"], body: (Inputs,Generators) => {
+define({id: "f0d2f559", inputs: ["Inputs","Generators"], outputs: ["archivoLocalInput","archivoLocal","selectorDMInput","selectorDM"], body: (Inputs,Generators) => {
 // Input archivo local
 const archivoLocalInput = Inputs.file({
   label: "Selecciona tu archivo local",
   accept: ".tsv,.csv,.json",
-  required: true,
   width: 310,
 });
 const archivoLocal = Generators.input(archivoLocalInput);
@@ -143,10 +142,10 @@ const selectorDM = Generators.input(selectorDMInput);
 return {archivoLocalInput,archivoLocal,selectorDMInput,selectorDM};
 }});
 
-define({id: "c97c1b8c", inputs: ["FileAttachment"], outputs: ["coca_ngrams","collocates","ngrams","wordFrequency"], body: (FileAttachment) => {
+define({id: "5646b267", inputs: ["FileAttachment"], outputs: ["coca_ngrams","collocates","ngrams","wordFrequency"], body: (FileAttachment) => {
 // Datos de muestra
 const coca_ngrams = FileAttachment("./data/coca_ngrams.tsv").tsv();
-const collocates = FileAttachment("./data/collocates.csv").csv({typed: true});
+const collocates = FileAttachment("./data/collocates.tsv").tsv();
 const ngrams = FileAttachment("./data/ngrams.json").json();
 const wordFrequency = FileAttachment("./data/wordFrequency.tsv").tsv();
 return {coca_ngrams,collocates,ngrams,wordFrequency};
@@ -195,23 +194,38 @@ if (carga == 0) { // Sin seleccionar modo
 return {cargaDiv,aLocalDiv,datosMuestraDiv,muestraJsonDiv};
 }});
 
-define({id: "1fe32136", inputs: ["selectorDM","coca_ngrams","collocates","wordFrequency","ngrams","archivoLocalInput","archivoLocal","carga"], outputs: ["arch","arch1","arch2","archivo"], body: (selectorDM,coca_ngrams,collocates,wordFrequency,ngrams,archivoLocalInput,archivoLocal,carga) => {
-// Parseo del archivo local
+define({id: "6f5744ec", inputs: ["archivoLocal"], body: (archivoLocal) => {
+console.log("1");
+console.log(archivoLocal);
+}});
+
+define({id: "a676b1bc", inputs: ["archivoLocalInput"], body: (archivoLocalInput) => {
+console.log("2");
+console.log(archivoLocalInput.value);
+}});
+
+define({id: "c34ad383", inputs: ["selectorDMInput","selectorDM","coca_ngrams","collocates","wordFrequency","ngrams","archivoLocalInput","archivoLocal","carga"], outputs: ["arch","arch1","arch2","archivo"], body: (selectorDMInput,selectorDM,coca_ngrams,collocates,wordFrequency,ngrams,archivoLocalInput,archivoLocal,carga) => {
+// Parseo de archivo
 var arch = [{}];
 var arch1 = [{}];
 var arch2 = [{}];
 
-if(selectorDM == "Ngrams (COCA)") {
-  arch2 = coca_ngrams;
-} else if(selectorDM == "Collocates (COCA)") {
-  arch2 = collocates;
-} else if(selectorDM == "Word Frequency (COCA)") {
-  arch2 = wordFrequency;
-} else if(selectorDM == "Ngrams (Modificado)") {
-  arch2 = ngrams;
+// Muestra
+if(selectorDMInput.value != "") {
+  if(selectorDM == "Ngrams (COCA)") {
+    arch2 = coca_ngrams;
+  } else if(selectorDM == "Collocates (COCA)") {
+    arch2 = collocates;
+  } else if(selectorDM == "Word Frequency (COCA)") {
+    arch2 = wordFrequency;
+  } else if(selectorDM == "Ngrams (Modificado)") {
+    arch2 = ngrams;
+  }
 }
-
-if(archivoLocalInput.value != undefined){
+ // Local
+if(archivoLocalInput.value != undefined) {
+  console.log("3");
+  console.log(archivoLocalInput.value);
   if(archivoLocal.name.split('.')[1] == 'tsv') {
     arch1 = archivoLocal.tsv();
   } else if(archivoLocal.name.split('.')[1] == 'csv') {
@@ -231,17 +245,21 @@ const archivo = arch;
 return {arch,arch1,arch2,archivo};
 }});
 
-define({id: "5a2f8b11", inputs: ["archivo","muestraJsonDiv"], outputs: ["keys"], body: (archivo,muestraJsonDiv) => {
+define({id: "eaaf9d5c", inputs: ["archivo","muestraJsonDiv"], outputs: ["keys"], body: (archivo,muestraJsonDiv) => {
+// Muestra archivo (formato json)
 if(JSON.stringify(archivo) != "[{}]") {
   muestraJsonDiv.innerHTML = JSON.stringify(archivo);
 } else {
   muestraJsonDiv.innerHTML = "";
 }
+
+// Keys
 const keys = Object.keys(archivo[0]);
 return {keys};
 }});
 
-define({id: "a084e6f6", inputs: ["keys","archivo"], outputs: ["keysTypes"], body: (keys,archivo) => {
+define({id: "aeb8984c", inputs: ["keys","archivo"], outputs: ["keysTypes"], body: (keys,archivo) => {
+// Tipos de las keys
 const keysTypes = [];
 keys.forEach((item, i) => {
   if(isNaN(archivo[0][item])) { // Texto
@@ -1591,8 +1609,8 @@ th {
 <div id="cell-aa964d73" class="observablehq observablehq--block"></div>
 <div id="cell-452f71f2" class="observablehq observablehq--block"></div>
 <!-- Modo de carga -->
-<div id="cell-79846788" class="observablehq observablehq--block"></div>
-<div id="cell-c97c1b8c" class="observablehq observablehq--block"></div>
+<div id="cell-f0d2f559" class="observablehq observablehq--block"></div>
+<div id="cell-5646b267" class="observablehq observablehq--block"></div>
 <div id="paso1">
 <div class="grid grid-cols-2">
   <div class="card"> <!-- Elegir modo -->
@@ -1614,9 +1632,11 @@ th {
 </div>
 </div>
 <div id="cell-71dae3ff" class="observablehq observablehq--block"></div>
-<div id="cell-1fe32136" class="observablehq observablehq--block"></div>
-<div id="cell-5a2f8b11" class="observablehq observablehq--block"></div>
-<div id="cell-a084e6f6" class="observablehq observablehq--block"></div>
+<div id="cell-6f5744ec" class="observablehq observablehq--block"></div>
+<div id="cell-a676b1bc" class="observablehq observablehq--block"></div>
+<div id="cell-c34ad383" class="observablehq observablehq--block"></div>
+<div id="cell-eaaf9d5c" class="observablehq observablehq--block"></div>
+<div id="cell-aeb8984c" class="observablehq observablehq--block"></div>
 <!-- Verificación -->
 <div id="paso2">
 <div class="grid grid-cols-3">
@@ -1720,6 +1740,6 @@ th {
 <div id="cell-af6d1128" class="observablehq observablehq--block"></div>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-14T13:29:55">Aug 14, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-14T14:58:43">Aug 14, 2024</a>.</div>
 </footer>
 </div>
