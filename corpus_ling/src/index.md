@@ -85,11 +85,19 @@ th {
 <!-- Botones pasos -->
 
 ```js
+// Imagenes
+const cargaDatospng = FileAttachment("cargaDatos.png").image({ width: 512 });
+const verificacionpng = FileAttachment("verificacion.png").image({ width: 512 });
+const visualizacionpng = FileAttachment("visualizacion.png").image({ width: 512 });
+```
+
+```js
+// Botonera
 const pasosInput = Inputs.button(
   [
-    ["1: Carga de datos", (value) => 1],
-    ["2: Verificación", (value) => 2],
-    ["3: Visualización", (value) => 3]
+    [cargaDatospng, (value) => 1],
+    [verificacionpng, (value) => 2],
+    [visualizacionpng, (value) => 3]
   ],
   { value: 0 }
 );
@@ -130,16 +138,16 @@ if (pasos == 0) { // Sin seleccionar paso
 
 ```js
 // Imagenes
-const ArchivoLocalpng = FileAttachment("ArchivoLocal.png").image({ width: 64 });
-const DatosMuestrapng = FileAttachment("DatosMuestra.png").image({ width: 64 });
+const archivoLocalpng = FileAttachment("archivoLocal.png").image({ width: 96 });
+const datosMuestrapng = FileAttachment("datosMuestra.png").image({ width: 96 });
 ```
 
 ```js
 // Botonera
 const cargaInput = Inputs.button(
   [
-    [ArchivoLocalpng, (value) => 1],
-    [DatosMuestrapng, (value) => 2]
+    [archivoLocalpng, (value) => 1],
+    [datosMuestrapng, (value) => 2]
   ], 
   { value: 0 }
 );
@@ -172,7 +180,7 @@ const wordFrequency = FileAttachment("./data/wordFrequency.tsv").tsv();
 
 <div id="paso1">
 <div class="grid grid-cols-2">
-  <div class="card"> <!-- Elegir modo -->
+  <div class="card" style="max-height: 450px;"> <!-- Elegir modo -->
     <h1>Elige el modo de carga de datos</h1>
     <br>
     ${cargaInput}
@@ -186,7 +194,7 @@ const wordFrequency = FileAttachment("./data/wordFrequency.tsv").tsv();
       ${selectorDMInput}
     </div>
   </div>
-  <div class="card" style="max-height: 350px;"> <!-- Visualización de datos -->
+  <div class="card" style="max-height: 450px;"> <!-- Visualización de datos -->
     <div id="muestraJson" class="scrollable-div"></div>
   </div>
 </div>
@@ -571,7 +579,9 @@ const nombreCol = Generators.input(nombreColInput);
     <div class="card"> <!-- Texto -->
       <h1>Elige el tipo de gráfico</h1>
       <br>
-      ${graphInput}
+      <div style="overflow-y: auto">
+        ${graphInput}
+      </div>
     </div>
     <div class="card grid-colspan-2" style="max-height: 1400px;"> <!-- Gráfico -->
       <div id="graphButtons">
@@ -582,7 +592,7 @@ const nombreCol = Generators.input(nombreColInput);
       <div id="graphButtonsLimits">
         ${ordenarVsInput}
       </div>
-      <div id="graphBarras" style="overflow-y: scroll">
+      <div id="graphBarras" style="overflow-x: scroll">
       </div>
       <div id="graphSector">
       </div>
@@ -608,19 +618,24 @@ const nombreCol = Generators.input(nombreColInput);
 
 ```js
 // Imagenes
-
+const graficoBarraspng = FileAttachment("graficoBarras.png").image({ width: 128 });
+const graficoSectorespng = FileAttachment("graficoSectores.png").image({ width: 128 });
+const graficoHexbinpng = FileAttachment("graficoHexbin.png").image({ width: 128 });
+const graficoSunburstpng = FileAttachment("graficoSunburst.png").image({ width: 128 });
+const graficoIciclepng = FileAttachment("graficoIcicle.png").image({ width: 128 });
+const graficoTreepng = FileAttachment("graficoTree.png").image({ width: 128 });
 ```
 
 ```js
 // Botonera gráficos
 const graphInput = Inputs.button(
   [
-    ["Gráfico de barras", (value) => 1],
-    ["Diagrama de sectores", (value) => 2],
-    ["Hexbin", (value) => 3],
-    ["Zoomable sunburst", (value) => 4],
-    ["Zoomable Icicle", (value) => 5],
-    ["Collapsible Tree", (value) => 6]
+    [graficoBarraspng, (value) => 1],
+    [graficoSectorespng, (value) => 2],
+    [graficoHexbinpng, (value) => 3],
+    [graficoSunburstpng, (value) => 4],
+    [graficoIciclepng, (value) => 5],
+    [graficoTreepng, (value) => 6]
   ],
   { value: 0 }
 );
