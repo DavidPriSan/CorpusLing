@@ -180,6 +180,7 @@ const wordFrequency = FileAttachment("./data/wordFrequency.tsv").tsv();
     <div id="carga"></div>
     <div id="aLocal">
       ${archivoLocalInput}
+      <div class="note">El archivo debe pesar menos de 50MB</div>
     </div>
     <div id="datosMuestra">
       ${selectorDMInput}
@@ -216,11 +217,6 @@ if (carga == 0) { // Sin seleccionar modo
 ```
 
 ```js
-console.log("1");
-console.log(archivoLocal);
-```
-
-```js
 // Parseo de archivo
 var arch = [{}];
 var arch1 = [{}];
@@ -238,7 +234,8 @@ if(selectorDMInput.value != "") {
     arch2 = ngrams;
   }
 }
- // Local
+
+// Local
 if(archivoLocalInput.value != undefined) {
   if(archivoLocal.name.split('.')[1] == 'tsv') {
     arch1 = archivoLocal.tsv();
@@ -695,6 +692,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   graphButtonsDiv.hidden = true;
   graphButtonsLimitsDiv.hidden = true;
   sunburstButtonsDiv.hidden = false;
+  graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
   graphIcicleDiv.hidden = true;
   graphTreeDiv.hidden = true;
@@ -705,6 +703,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   graphButtonsDiv.hidden = true;
   graphButtonsLimitsDiv.hidden = true;
   sunburstButtonsDiv.hidden = false;
+  graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
   graphIcicleDiv.hidden = false;
   graphTreeDiv.hidden = true;
@@ -715,6 +714,7 @@ if (graph == 0) { // Sin seleccionar gráfico
   graphButtonsDiv.hidden = true;
   graphButtonsLimitsDiv.hidden = true;
   sunburstButtonsDiv.hidden = false;
+  graphHexbinDiv.hidden = true;
   hexbinButtonsDiv.hidden = true;
   graphIcicleDiv.hidden = true;
   graphTreeDiv.hidden = false;
