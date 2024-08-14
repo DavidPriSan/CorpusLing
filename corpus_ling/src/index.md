@@ -130,14 +130,16 @@ if (pasos == 0) { // Sin seleccionar paso
 
 ```js
 // Imagenes
-const TSVpng = FileAttachment("TSV.png").image({ width: 64 });
+const ArchivoLocalpng = FileAttachment("ArchivoLocal.png").image({ width: 64 });
+const DatosMuestrapng = FileAttachment("DatosMuestra.png").image({ width: 64 });
 ```
 
 ```js
 // Botonera
 const cargaInput = Inputs.button(
   [
-    [TSVpng, (value) => 1]
+    [ArchivoLocalpng, (value) => 1],
+    [DatosMuestrapng, (value) => 2]
   ], 
   { value: 0 }
 );
@@ -147,14 +149,26 @@ const carga = Generators.input(cargaInput);
 <!-- Modo de carga -->
 
 ```js
-// Input TSV
-const archivoTSVInput = Inputs.file({
-  label: "Archivo TSV",
+// Input archivo local
+const archivoLocalInput = Inputs.file({
+  label: "Selecciona tu archivo local",
   accept: ".tsv,.csv,.json",
   required: true,
   width: 310,
 });
-const archivoTSV = Generators.input(archivoTSVInput);
+const archivoLocal = Generators.input(archivoLocalInput);
+
+// Selector datos de muestra
+const selectorDMInput = Inputs.select(["", "Ngrams (COCA)", "Collocates (COCA)", "Word Frequency (COCA)", "Ngrams (Modificado)"], {label: "Selecciona un conjunto de datos", value: ""});
+const selectorDM = Generators.input(selectorDMInput);
+```
+
+```js
+// Datos de muestra
+const coca_ngrams = FileAttachment("./data/coca_ngrams.tsv").tsv();
+const collocates = FileAttachment("./data/collocates.csv").csv({typed: true});
+const ngrams = FileAttachment("./data/ngrams.json").json();
+const wordFrequency = FileAttachment("./data/wordFrequency.tsv").tsv();
 ```
 
 <div id="paso1">
@@ -165,47 +179,84 @@ const archivoTSV = Generators.input(archivoTSVInput);
     ${cargaInput}
     <br>
     <div id="carga"></div>
-    <div id="TSV">
-      ${archivoTSVInput}
+    <div id="aLocal">
+      ${archivoLocalInput}
+    </div>
+    <div id="datosMuestra">
+      ${selectorDMInput}
     </div>
   </div>
   <div class="card" style="max-height: 350px;"> <!-- Visualización de datos -->
-    <div id="muestraTSV" class="scrollable-div"></div>
+    <div id="muestraJson" class="scrollable-div"></div>
   </div>
 </div>
 </div>
 
 ```js
 const cargaDiv = document.getElementById("carga");
-const TSVDiv = document.getElementById("TSV");
-const muestraTSVDiv = document.getElementById("muestraTSV");
+const aLocalDiv = document.getElementById("aLocal");
+const datosMuestraDiv = document.getElementById("datosMuestra");
+const muestraJsonDiv = document.getElementById("muestraJson");
 
 if (carga == 0) { // Sin seleccionar modo
   cargaDiv.innerHTML = "<p>Puedes elegir como quieres cargar tus datos pulsando los distintos botones de arriba.</p>";
-  TSVDiv.hidden = true;
-  muestraTSVDiv.hidden = true;
-} else if (carga == 1) { // Examinar TSV
+  aLocalDiv.hidden = true;
+  muestraJsonDiv.hidden = true;
+  datosMuestraDiv.hidden = true;
+} else if (carga == 1) { // Examinar Archivo
   cargaDiv.innerHTML = "<p>Examina el archivo de tu equipo haciendo click en el botón de abajo, el archivo puede ser TSV, CSV(siendo la primera línea del mismo los encabezados de las columnas en ambos casos) o JSON.</p><br>";
-  TSVDiv.hidden = false;
-  muestraTSVDiv.hidden = false;
+  aLocalDiv.hidden = false;
+  muestraJsonDiv.hidden = false;
+  datosMuestraDiv.hidden = true;
+} else if (carga == 2) { // Datos de muestra
+  cargaDiv.innerHTML = "<p>Desde CorpusLing ofrecemos varios archivos de muestra para probar el funcionamiento de la página y las distintas posibilidades que ofrecemos.</p><p>Estos conjuntos son muestras del corpus COCA ofrecidos por <a href=\"https://www.english-corpora.org/\">English Corpora</a></p><a href=\"https://www.wordfrequency.info/\">Word Frequency</a><br><a href=\"https://www.ngrams.info/\">N-Grams</a><br><a href=\"https://www.collocates.info/\">Collocates</a><br><br>";
+  aLocalDiv.hidden = true;
+  muestraJsonDiv.hidden = false;
+  datosMuestraDiv.hidden = false;
 }
 ```
 
 ```js
-// Parseo TSV
-var arch;
-if (archivoTSV.name.split('.')[1] == 'tsv'){
-  var arch = archivoTSV.tsv();
-} else if (archivoTSV.name.split('.')[1] == 'csv'){
-  var arch = archivoTSV.csv( {typed: true} );
-} else if (archivoTSV.name.split('.')[1] == 'json'){
-  var arch = archivoTSV.json();
+// Parseo del archivo local
+var arch = [{}];
+var arch1 = [{}];
+var arch2 = [{}];
+
+if(selectorDM == "Ngrams (COCA)") {
+  arch2 = coca_ngrams;
+} else if(selectorDM == "Collocates (COCA)") {
+  arch2 = collocates;
+} else if(selectorDM == "Word Frequency (COCA)") {
+  arch2 = wordFrequency;
+} else if(selectorDM == "Ngrams (Modificado)") {
+  arch2 = ngrams;
 }
+
+if(archivoLocalInput.value != undefined){
+  if(archivoLocal.name.split('.')[1] == 'tsv') {
+    arch1 = archivoLocal.tsv();
+  } else if(archivoLocal.name.split('.')[1] == 'csv') {
+    arch1 = archivoLocal.csv( {typed: true} );
+  } else if(archivoLocal.name.split('.')[1] == 'json') {
+    arch1 = archivoLocal.json();
+  }
+}
+
+if(carga == 1) {
+  arch = arch1;
+} else if(carga == 2) {
+  arch = arch2;
+}
+
 const archivo = arch;
 ```
 
 ```js
-muestraTSV.innerHTML = JSON.stringify(archivo);
+if(JSON.stringify(archivo) != "[{}]") {
+  muestraJsonDiv.innerHTML = JSON.stringify(archivo);
+} else {
+  muestraJsonDiv.innerHTML = "";
+}
 const keys = Object.keys(archivo[0]);
 ```
 
