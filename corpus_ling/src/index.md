@@ -599,7 +599,7 @@ const nombreCol = Generators.input(nombreColInput);
       <div id="hexbinButtons">
         ${selectorRadioInput}
       </div>
-      <div id="graphHexbin">
+      <div id="graphHexbin" style="max-height: 1200px">
       </div>
       <div id="sunburstButtons">
         ${limitSbInput}
@@ -756,7 +756,7 @@ const selectorIdInput = Inputs.select(keysText, {label: "Selecciona identificado
 const selectorId = Generators.input(selectorIdInput);
 
 // Selector de columna
-const selectorVsInput = Inputs.select(keysNumber, {label: "Selecciona columna"});
+const selectorVsInput = Inputs.select(keysNumber, {label: "Selecciona valor"});
 const selectorVs = Generators.input(selectorVsInput);
 
 // Limitador de datos
@@ -768,7 +768,7 @@ const limitSbInput = Inputs.range([1, 50], {step: 1, label: "Límite de elemento
 const limitSb = Generators.input(limitSbInput);
 
 // Ordenar por id/dato
-const ordenarVsInput = Inputs.select(["Identificador", "Valor"], {label: "Ordenar por"});
+const ordenarVsInput = Inputs.select(["Identificador", "Valor"], {label: "Ordenar por", value: "Valor"});
 const ordenarVs = Generators.input(ordenarVsInput);
 
 // Selector Radio
@@ -910,8 +910,8 @@ if(keysText.length === 0 || keysNumber.length === 0) {
 
   // Dimensiones
   const tt_margin = 20,
-      tt_width = 900,
-      tt_height = 900,
+      tt_width = 800,
+      tt_height = 800,
       tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
 
   // Datos
@@ -1007,8 +1007,8 @@ if(keysText.length === 0 || keysNumber.length === 0) {
       let label = tt_grouped.find(x => x[selectorVs] === (i.value).toString())[tt_key] + ': ' + i.value;
       tt_hoverDiv.html(label)
         // Coordenadas
-        .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 150 + 'px')
-        .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 175 + 'px');
+        .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 375 + 'px')
+        .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 325 + 'px');
     })
     .on('mouseout', function (d, i) { // Ratón sale del sector
       // Volver sector a la normalidad
@@ -1036,8 +1036,8 @@ if(keysText.length === 0 || keysNumber.length === 0) {
   graphInput[2].disabled = false;
 
   // Dimensiones
-  const hb_width = 650;
-  const hb_height = hb_width;
+  const hb_width = 750;
+  const hb_height = 400;
   const hb_marginTop = 20;
   const hb_marginRight = 20;
   const hb_marginBottom = 30;
@@ -1137,9 +1137,9 @@ if( archivo[0].children === undefined ) {
   var sb_data = limitData(tempArchivo[0], limitSb);
 
   // Dimensiones
-  const ng_width = 950,
-        ng_height = ng_width,
-        ng_radius = ng_width / 6;
+  const ng_width = 950;
+  const ng_height = ng_width;
+  const ng_radius = ng_width / 6;
 
   // Paleta de colores
   const ng_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, sb_data.children.length + 1));
@@ -1171,8 +1171,8 @@ if( archivo[0].children === undefined ) {
   // SVG
   const ng_svg = d3.select('#graphSunburst').append('svg')
     .attr('id', 'sunburst')
-    .attr('viewBox', [-ng_width / 2, -ng_height / 2, ng_width, ng_width])
-    .style('font', '10px sans-serif');
+    .attr('viewBox', [-ng_width / 2, -ng_height / 2, ng_width, ng_height])
+    .style('font', '12px sans-serif');
 
   // Arcos
   const ng_path = ng_svg.append('g')
@@ -1293,8 +1293,8 @@ if( archivo[0].children === undefined ) {
   var ic_data = limitData(tempArchivo[0], limitSb);
 
   // Dimensiones
-  const ic_width = 928;
-  const ic_height = 1200;
+  const ic_width = 1200;
+  const ic_height = 850;
 
   // Escala de colores
   const ic_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, ic_data.children.length + 1));

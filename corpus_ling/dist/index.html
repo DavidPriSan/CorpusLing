@@ -706,7 +706,7 @@ if (graph == 0) { // Sin seleccionar gráfico
 return {graphBarrasDiv,graphSectorDiv,graphSunburstDiv,graphButtonsDiv,graphButtonsLimitsDiv,sunburstButtonsDiv,graphHexbinDiv,hexbinButtonsDiv,graphIcicleDiv,graphTreeDiv};
 }});
 
-define({id: "932acefc", inputs: ["keys","keysTypes","Inputs","Generators","archivo"], outputs: ["keysText","keysNumber","selectorIdInput","selectorId","selectorVsInput","selectorVs","limitVsInput","limitVs","limitSbInput","limitSb","ordenarVsInput","ordenarVs","selectorRadioInput","selectorRadio"], body: (keys,keysTypes,Inputs,Generators,archivo) => {
+define({id: "f703d9ef", inputs: ["keys","keysTypes","Inputs","Generators","archivo"], outputs: ["keysText","keysNumber","selectorIdInput","selectorId","selectorVsInput","selectorVs","limitVsInput","limitVs","limitSbInput","limitSb","ordenarVsInput","ordenarVs","selectorRadioInput","selectorRadio"], body: (keys,keysTypes,Inputs,Generators,archivo) => {
 // Keys divididas por tipo
 const keysText = [];
 const keysNumber = [];
@@ -724,7 +724,7 @@ const selectorIdInput = Inputs.select(keysText, {label: "Selecciona identificado
 const selectorId = Generators.input(selectorIdInput);
 
 // Selector de columna
-const selectorVsInput = Inputs.select(keysNumber, {label: "Selecciona columna"});
+const selectorVsInput = Inputs.select(keysNumber, {label: "Selecciona valor"});
 const selectorVs = Generators.input(selectorVsInput);
 
 // Limitador de datos
@@ -736,7 +736,7 @@ const limitSbInput = Inputs.range([1, 50], {step: 1, label: "Límite de elemento
 const limitSb = Generators.input(limitSbInput);
 
 // Ordenar por id/dato
-const ordenarVsInput = Inputs.select(["Identificador", "Valor"], {label: "Ordenar por"});
+const ordenarVsInput = Inputs.select(["Identificador", "Valor"], {label: "Ordenar por", value: "Valor"});
 const ordenarVs = Generators.input(ordenarVsInput);
 
 // Selector Radio
@@ -865,7 +865,7 @@ if(keysText.length === 0 || keysNumber.length === 0) {
 }
 }});
 
-define({id: "4569e212", inputs: ["keysText","keysNumber","graphSectorDiv","graphInput","archivo","limitVs","selectorId","structuredClone","ordenarVs","d3","selectorVs"], body: (keysText,keysNumber,graphSectorDiv,graphInput,archivo,limitVs,selectorId,structuredClone,ordenarVs,d3,selectorVs) => {
+define({id: "a9ee453c", inputs: ["keysText","keysNumber","graphSectorDiv","graphInput","archivo","limitVs","selectorId","structuredClone","ordenarVs","d3","selectorVs"], body: (keysText,keysNumber,graphSectorDiv,graphInput,archivo,limitVs,selectorId,structuredClone,ordenarVs,d3,selectorVs) => {
 if(keysText.length === 0 || keysNumber.length === 0) {
   graphSectorDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
   graphInput[1].disabled = true;
@@ -875,8 +875,8 @@ if(keysText.length === 0 || keysNumber.length === 0) {
 
   // Dimensiones
   const tt_margin = 20,
-      tt_width = 900,
-      tt_height = 900,
+      tt_width = 800,
+      tt_height = 800,
       tt_radius = Math.min(tt_width, tt_height) / 2 - tt_margin;
 
   // Datos
@@ -972,8 +972,8 @@ if(keysText.length === 0 || keysNumber.length === 0) {
       let label = tt_grouped.find(x => x[selectorVs] === (i.value).toString())[tt_key] + ': ' + i.value;
       tt_hoverDiv.html(label)
         // Coordenadas
-        .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 150 + 'px')
-        .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 175 + 'px');
+        .style('left', (d3.pointer(d)[0] + document.getElementById('graphSector').getBoundingClientRect().x) + 375 + 'px')
+        .style('top', (d3.pointer(d)[1] + document.getElementById('graphSector').getBoundingClientRect().x) + 325 + 'px');
     })
     .on('mouseout', function (d, i) { // Ratón sale del sector
       // Volver sector a la normalidad
@@ -989,7 +989,7 @@ if(keysText.length === 0 || keysNumber.length === 0) {
 }
 }});
 
-define({id: "e020330b", inputs: ["keysText","keysNumber","graphHexbinDiv","graphInput","archivo","limitVs","d3","selectorId","selectorVs","selectorRadio"], outputs: ["d3hexbin"], body: async (keysText,keysNumber,graphHexbinDiv,graphInput,archivo,limitVs,d3,selectorId,selectorVs,selectorRadio) => {
+define({id: "5cd3fa6a", inputs: ["keysText","keysNumber","graphHexbinDiv","graphInput","archivo","limitVs","d3","selectorId","selectorVs","selectorRadio"], outputs: ["d3hexbin"], body: async (keysText,keysNumber,graphHexbinDiv,graphInput,archivo,limitVs,d3,selectorId,selectorVs,selectorRadio) => {
 const d3hexbin = await import("./_node/d3-hexbin@0.2.2/index.js");
 
 if(keysText.length === 0 || keysNumber.length === 0) {
@@ -1000,8 +1000,8 @@ if(keysText.length === 0 || keysNumber.length === 0) {
   graphInput[2].disabled = false;
 
   // Dimensiones
-  const hb_width = 650;
-  const hb_height = hb_width;
+  const hb_width = 750;
+  const hb_height = 400;
   const hb_marginTop = 20;
   const hb_marginRight = 20;
   const hb_marginBottom = 30;
@@ -1087,7 +1087,7 @@ if(keysText.length === 0 || keysNumber.length === 0) {
 return {d3hexbin};
 }});
 
-define({id: "714063c0", inputs: ["archivo","graphSunburstDiv","graphInput","structuredClone","limitSb","d3"], body: (archivo,graphSunburstDiv,graphInput,structuredClone,limitSb,d3) => {
+define({id: "78c355a3", inputs: ["archivo","graphSunburstDiv","graphInput","structuredClone","limitSb","d3"], body: (archivo,graphSunburstDiv,graphInput,structuredClone,limitSb,d3) => {
 if( archivo[0].children === undefined ) {
   graphSunburstDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
   graphInput[3].disabled = true;
@@ -1100,9 +1100,9 @@ if( archivo[0].children === undefined ) {
   var sb_data = limitData(tempArchivo[0], limitSb);
 
   // Dimensiones
-  const ng_width = 950,
-        ng_height = ng_width,
-        ng_radius = ng_width / 6;
+  const ng_width = 950;
+  const ng_height = ng_width;
+  const ng_radius = ng_width / 6;
 
   // Paleta de colores
   const ng_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, sb_data.children.length + 1));
@@ -1134,8 +1134,8 @@ if( archivo[0].children === undefined ) {
   // SVG
   const ng_svg = d3.select('#graphSunburst').append('svg')
     .attr('id', 'sunburst')
-    .attr('viewBox', [-ng_width / 2, -ng_height / 2, ng_width, ng_width])
-    .style('font', '10px sans-serif');
+    .attr('viewBox', [-ng_width / 2, -ng_height / 2, ng_width, ng_height])
+    .style('font', '12px sans-serif');
 
   // Arcos
   const ng_path = ng_svg.append('g')
@@ -1241,7 +1241,7 @@ if( archivo[0].children === undefined ) {
 }
 }});
 
-define({id: "b5c90d90", inputs: ["archivo","graphIcicleDiv","graphInput","structuredClone","limitSb","d3","width"], body: (archivo,graphIcicleDiv,graphInput,structuredClone,limitSb,d3,width) => {
+define({id: "89041f02", inputs: ["archivo","graphIcicleDiv","graphInput","structuredClone","limitSb","d3","width"], body: (archivo,graphIcicleDiv,graphInput,structuredClone,limitSb,d3,width) => {
 if( archivo[0].children === undefined ) {
   graphIcicleDiv.innerHTML = "<div class=\"caution\">Los datos son incompatibles con este gráfico, por favor seleccione otro tipo de gráfico.</div>";
   graphInput[4].disabled = true;
@@ -1254,8 +1254,8 @@ if( archivo[0].children === undefined ) {
   var ic_data = limitData(tempArchivo[0], limitSb);
 
   // Dimensiones
-  const ic_width = 928;
-  const ic_height = 1200;
+  const ic_width = 1200;
+  const ic_height = 850;
 
   // Escala de colores
   const ic_color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, ic_data.children.length + 1));
@@ -1723,7 +1723,7 @@ th {
       <div id="hexbinButtons">
         <span id="cell-59d44c5b"><span class="observablehq-loading"></span></span>
       </div>
-      <div id="graphHexbin">
+      <div id="graphHexbin" style="max-height: 1200px">
       </div>
       <div id="sunburstButtons">
         <span id="cell-5e9b754b"><span class="observablehq-loading"></span></span>
@@ -1743,21 +1743,21 @@ th {
 <!-- Elección gráfico -->
 <div id="cell-cc5fabb7" class="observablehq observablehq--block"></div>
 <!-- Botones -->
-<div id="cell-932acefc" class="observablehq observablehq--block"></div>
+<div id="cell-f703d9ef" class="observablehq observablehq--block"></div>
 <!-- Gráfico de barras -->
 <div id="cell-e2fb3f6a" class="observablehq observablehq--block"></div>
 <!-- Diagrama de sectores -->
-<div id="cell-4569e212" class="observablehq observablehq--block"></div>
+<div id="cell-a9ee453c" class="observablehq observablehq--block"></div>
 <!-- Hexbin -->
-<div id="cell-e020330b" class="observablehq observablehq--block"></div>
+<div id="cell-5cd3fa6a" class="observablehq observablehq--block"></div>
 <!-- Zoomable sunburst -->
-<div id="cell-714063c0" class="observablehq observablehq--block"></div>
+<div id="cell-78c355a3" class="observablehq observablehq--block"></div>
 <!-- Zoomable Icicle -->
-<div id="cell-b5c90d90" class="observablehq observablehq--block"></div>
+<div id="cell-89041f02" class="observablehq observablehq--block"></div>
 <!-- Collapsible Tree -->
 <div id="cell-af6d1128" class="observablehq observablehq--block"></div>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-14T18:16:29">Aug 14, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-21T17:55:04">Aug 21, 2024</a>.</div>
 </footer>
 </div>
