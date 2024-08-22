@@ -217,7 +217,7 @@ if (carga == 0) { // Sin seleccionar modo
   muestraJsonDiv.hidden = false;
   datosMuestraDiv.hidden = true;
 } else if (carga == 2) { // Datos de muestra
-  cargaDiv.innerHTML = "<p>Desde CorpusLing ofrecemos varios archivos de muestra para probar el funcionamiento de la página y las distintas posibilidades que ofrecemos.</p><p>Estos conjuntos son muestras del corpus COCA ofrecidos por <a href=\"https://www.english-corpora.org/\">English Corpora</a></p><a href=\"https://www.wordfrequency.info/\">Word Frequency</a><br><a href=\"https://www.ngrams.info/\">N-Grams</a><br><a href=\"https://www.collocates.info/\">Collocates</a><br><br>";
+  cargaDiv.innerHTML = "<p>Desde CorpusLing ofrecemos varios archivos de muestra para probar el funcionamiento de la página y las distintas posibilidades que ofrecemos.</p><p>Estos conjuntos son muestras del corpus COCA ofrecidos por <a href=\"https://www.english-corpora.org/\" target=\"_blank\" rel=\"noopener noreferrer\">English Corpora</a></p><a href=\"https://www.wordfrequency.info/\" target=\"_blank\" rel=\"noopener noreferrer\">Word Frequency</a><br><a href=\"https://www.ngrams.info/\" target=\"_blank\" rel=\"noopener noreferrer\">N-Grams</a><br><a href=\"https://www.collocates.info/\" target=\"_blank\" rel=\"noopener noreferrer\">Collocates</a><br><br>";
   aLocalDiv.hidden = true;
   muestraJsonDiv.hidden = false;
   datosMuestraDiv.hidden = false;
