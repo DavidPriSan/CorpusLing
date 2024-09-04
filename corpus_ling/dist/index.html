@@ -187,7 +187,7 @@ selectorDMInput
 ))
 }});
 
-define({id: "16eba9fe", inputs: ["carga"], outputs: ["cargaDiv","aLocalDiv","datosMuestraDiv","muestraJsonDiv"], body: (carga) => {
+define({id: "0d1c71e3", inputs: ["carga"], outputs: ["cargaDiv","aLocalDiv","datosMuestraDiv","muestraJsonDiv"], body: (carga) => {
 const cargaDiv = document.getElementById("carga");
 const aLocalDiv = document.getElementById("aLocal");
 const datosMuestraDiv = document.getElementById("datosMuestra");
@@ -199,7 +199,7 @@ if (carga == 0) { // Sin seleccionar modo
   muestraJsonDiv.hidden = true;
   datosMuestraDiv.hidden = true;
 } else if (carga == 1) { // Examinar Archivo
-  cargaDiv.innerHTML = "<p>Examina el archivo de tu equipo haciendo click en el botón de abajo, el archivo puede ser TSV, CSV(siendo la primera línea del mismo los encabezados de las columnas en ambos casos) o JSON.</p><br>";
+  cargaDiv.innerHTML = "<p>Examina el archivo de tu equipo haciendo click en el botón de abajo, el archivo puede ser TSV, CSV(siendo la primera línea del mismo los encabezados de las columnas en ambos casos) o JSON.</p><p>El corpus que subas a nuestra aplicación será eliminado del sistema en cuanto cierres esta página, no violaremos tu privacidad en ningún momento.</p><br>";
   aLocalDiv.hidden = false;
   muestraJsonDiv.hidden = false;
   datosMuestraDiv.hidden = true;
@@ -1649,7 +1649,7 @@ th {
   </div>
 </div>
 </div>
-<div id="cell-16eba9fe" class="observablehq observablehq--block"></div>
+<div id="cell-0d1c71e3" class="observablehq observablehq--block"></div>
 <div id="cell-edd8342b" class="observablehq observablehq--block"></div>
 <div id="cell-eaaf9d5c" class="observablehq observablehq--block"></div>
 <div id="cell-aeb8984c" class="observablehq observablehq--block"></div>
@@ -1758,6 +1758,6 @@ th {
 <div id="cell-af6d1128" class="observablehq observablehq--block"></div>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-08-22T18:32:18">Aug 22, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-09-04T13:58:09">Sep 4, 2024</a>.</div>
 </footer>
 </div>

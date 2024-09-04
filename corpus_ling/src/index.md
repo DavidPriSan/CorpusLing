@@ -212,7 +212,7 @@ if (carga == 0) { // Sin seleccionar modo
   muestraJsonDiv.hidden = true;
   datosMuestraDiv.hidden = true;
 } else if (carga == 1) { // Examinar Archivo
-  cargaDiv.innerHTML = "<p>Examina el archivo de tu equipo haciendo click en el botón de abajo, el archivo puede ser TSV, CSV(siendo la primera línea del mismo los encabezados de las columnas en ambos casos) o JSON.</p><br>";
+  cargaDiv.innerHTML = "<p>Examina el archivo de tu equipo haciendo click en el botón de abajo, el archivo puede ser TSV, CSV(siendo la primera línea del mismo los encabezados de las columnas en ambos casos) o JSON.</p><p>El corpus que subas a nuestra aplicación será eliminado del sistema en cuanto cierres esta página, no violaremos tu privacidad en ningún momento.</p><br>";
   aLocalDiv.hidden = false;
   muestraJsonDiv.hidden = false;
   datosMuestraDiv.hidden = true;
