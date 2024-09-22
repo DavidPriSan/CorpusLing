@@ -8,7 +8,7 @@ from nltk.util import ngrams
 #kaggle.api.dataset_download_files('rtatman/120-million-word-spanish-corpus', path='./src/data/', unzip=True)
 
 #Carga y formateo de datos
-with open ("./src/data/spanishText_205000_210000", "r", encoding="latin-1") as file:
+with open ("./spanish_corpus/spanishText_205000_210000", "r", encoding="latin-1") as file:
     text = file.read()
     
 text = text.lower()
@@ -31,12 +31,14 @@ tokenized = text.split()
 bigrams = [{} for i in range(len(tokenized))]
 i = 0
 for j in tokenized:
-	if i < len(tokenized)-1:
-		bigrams[i] = {"word": j, "bigram": tokenized[i + 1], "year": random.randint(1990,2025), "country": random.choice(paises)}
-		i += 1
-	else:
-		bigrams[i] = {"word": j, "bigram": "", "year": random.randint(1990,2025), "country": random.choice(paises)}
-		i += 1
+	if i < 10000:
+		if i < len(tokenized)-1:
+			bigrams[i] = {"word": j, "bigram": tokenized[i + 1], "year": random.randint(1990,2025), "country": random.choice(paises)}
+			i += 1
+		else:
+			bigrams[i] = {"word": j, "bigram": "", "year": random.randint(1990,2025), "country": random.choice(paises)}
+			i += 1
 
 #Devolver resultado en json
-json.dump(bigrams, sys.stdout)
+with open('bigramas.json', 'w') as f:
+	json.dump(bigrams, f)
